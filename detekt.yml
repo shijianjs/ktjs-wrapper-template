@@ -1,0 +1,8 @@
+style:
+  ForbiddenImport:
+    active: true
+    forbiddenImports:
+      - value: 'org.w3c.dom.*'
+        reason: 'Use kotlin-browser web.* types; Kotlin/JS org.w3c.dom.* is a separate type system.'
+      - value: 'kotlinx.browser.*'
+        reason: 'Use kotlin-browser web.* types; kotlinx.browser.* is a separate type system.'

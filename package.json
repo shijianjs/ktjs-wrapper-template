@@ -1,0 +1,8 @@
+{
+  "name": "__PREFIX__-npm-versions",
+  "private": true,
+  "description": "Source of truth for npm package versions used by the Kotlin/JS build. Read by build.gradle.kts and updated by Dependabot.",
+  "dependencies": {
+    "__NPM_PACKAGE__": "__NPM_VERSION__"
+  }
+}

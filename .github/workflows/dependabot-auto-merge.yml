@@ -1,0 +1,93 @@
+name: Dependabot auto-merge
+
+# Runs after the CI workflow completes, in the context of the default branch, so the
+# token has write access. Workflows triggered directly by Dependabot only get a
+# read-only GITHUB_TOKEN, which cannot merge or push.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  auto-merge:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find Dependabot pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          pr=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" --jq '.[0].number // empty')
+          if [ -z "$pr" ]; then
+            echo "No pull request found for $HEAD_SHA"
+            exit 0
+          fi
+
+          author=$(gh api "repos/$REPO/pulls/$pr" --jq .user.login)
+          if [ "$author" != "dependabot[bot]" ]; then
+            echo "PR #$pr is authored by $author, not Dependabot; skipping"
+            exit 0
+          fi
+
+          echo "number=$pr" >> "$GITHUB_OUTPUT"
+
+      - name: Check out pull request branch
+        if: steps.pr.outputs.number
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+
+      - name: Download lock file validated by CI
+        if: steps.pr.outputs.number
+        uses: actions/download-artifact@v8
+        with:
+          name: npm-lock
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: kotlin-js-store
+
+      - name: Commit refreshed lock file
+        if: steps.pr.outputs.number
+        env:
+          REPO: ${{ github.repository }}
+          PR: ${{ steps.pr.outputs.number }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          if git diff --quiet -- kotlin-js-store/package-lock.json; then
+            echo "Lock file is already up to date"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kotlin-js-store/package-lock.json
+          # The lock file was already validated by the CI run that produced it.
+          git commit -m "Update npm lock file [skip ci]"
+          git push origin "HEAD:refs/heads/$BRANCH"
+          echo "Pushed refreshed lock file to PR #$PR"
+
+      - name: Merge pull request
+        if: steps.pr.outputs.number
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ steps.pr.outputs.number }}
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then
+              exit 0
+            fi
+            echo "Merge attempt $attempt failed; GitHub may still be recalculating mergeability"
+            sleep 5
+          done
+          exit 1

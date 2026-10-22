@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  # Pull requests only: a commit that reached master was already verified by the PR run, so a push
+  # to master would just spend the same build again. Run this manually when needed.
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Install browser test dependencies
+        run: npx --yes playwright install-deps chromium
+
+      - name: Refresh npm lock file
+        if: github.actor == 'dependabot[bot]'
+        run: ./gradlew kotlinUpgradePackageLock
+
+      - name: Build and test
+        run: ./gradlew build --stacktrace
+
+      # Validates the demo bundle and the Dokka reference that the Pages workflow deploys.
+      - name: Assemble Pages site
+        run: ./gradlew pagesSite
+
+      - name: Test the demo page
+        run: ./gradlew :demo:e2eTest
+
+      - name: Upload refreshed npm lock file
+        if: github.actor == 'dependabot[bot]'
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-lock
+          path: kotlin-js-store/package-lock.json
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: "**/build/reports/tests/**"
+          if-no-files-found: ignore

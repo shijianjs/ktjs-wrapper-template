@@ -1,0 +1,265 @@
+name: Release
+
+# One release publishes one or more wrapper modules. Central itself is never contacted from here:
+# this workflow signs the artifacts, packages one archive per Maven coordinate, attaches the archives
+# to a GitHub release and registers them with the Maven Central hub
+# (__OWNER__/maven-central-publishing). The hub merges every pending registration into a single
+# Central deployment, so several modules released together still cost one Release Count.
+#
+# `verify` runs the hub's own `jreleaser deploy --dry-run`. It exercises the complete hand-off â€?# download, sha256, archive layout, signatures, repo1 pruning and bundle creation â€?without
+# uploading anything.
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Release tag to create or update, e.g. release-1"
+        required: true
+        type: string
+      modules:
+        description: "Comma-separated modules to release; empty means every publishable module"
+        required: false
+        default: ""
+        type: string
+      register:
+        description: "Commit the registrations to __OWNER__/maven-central-publishing"
+        required: false
+        default: true
+        type: boolean
+      verify:
+        description: "Run the hub bundle dry run and wait for it (never uploads to Central)"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  # Create the GitHub release and upload the archives.
+  contents: write
+
+concurrency:
+  # Two releases must not race for the same tag or the same registry files.
+  group: release
+  cancel-in-progress: false
+
+env:
+  HUB_REPOSITORY: __OWNER__/maven-central-publishing
+  HUB_BRANCH: main
+
+jobs:
+  release:
+    name: Build, package and register
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Validate the release tag
+        env:
+          RELEASE: ${{ inputs.release }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE" =~ ^release-[0-9]+$ ]]; then
+            echo "::error::release must look like release-<number>, got '$RELEASE'"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+
+      - name: Set up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # The module versions are derived from package.json and wrapper-revisions.properties, so the
+      # workflow never repeats the "-kt.N" rule. Only modules whose revision was bumped get a new
+      # version; unchanged modules keep a version that already exists on Central.
+      - name: Resolve the modules in this release
+        id: plan
+        env:
+          INPUT_MODULES: ${{ inputs.modules }}
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          ./gradlew -q printPublishedVersions | tee build/published-versions.txt
+          python3 - "$INPUT_MODULES" build/published-versions.txt build/release-modules.txt <<'PY'
+          import sys
+
+          requested = [item.strip() for item in sys.argv[1].split(",") if item.strip()]
+          versions = {}
+          with open(sys.argv[2], encoding="utf-8") as stream:
+              for line in stream:
+                  name, separator, version = line.strip().partition("=")
+                  if separator and version:
+                      versions[name] = version
+
+          unknown = [name for name in requested if name not in versions]
+          if unknown:
+              raise SystemExit(
+                  f"unknown module(s): {', '.join(unknown)}; "
+                  f"publishable: {', '.join(sorted(versions))}"
+              )
+
+          selected = requested or sorted(versions)
+          with open(sys.argv[3], "w", encoding="utf-8") as stream:
+              for name in selected:
+                  stream.write(f"{name}={versions[name]}\n")
+          print("release modules: " + " ".join(selected))
+          PY
+          tasks="$(sed -n 's/^\([^=]*\)=.*/:\1:publishAllPublicationsToHubStagingRepository/p' build/release-modules.txt | tr '\n' ' ')"
+          echo "tasks=$tasks" >> "$GITHUB_OUTPUT"
+
+      # A file repository produces the Maven layout with the `.asc` signatures and never contacts
+      # Central. Signing uses the same in-memory key that a direct Central publish would use.
+      - name: Publish to the file repository
+        env:
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
+        run: ./gradlew ${{ steps.plan.outputs.tasks }} --stacktrace
+
+      - name: Package the archives and registrations
+        env:
+          RELEASE: ${{ inputs.release }}
+        run: |
+          set -euo pipefail
+          python3 scripts/hub-release.py \
+            --project "$GITHUB_REPOSITORY" \
+            --release "$RELEASE" \
+            --modules-file build/release-modules.txt \
+            --repository . \
+            --archives build/hub-release/archives \
+            --registrations build/hub-release
+
+      - name: Write the release notes
+        env:
+          RELEASE: ${{ inputs.release }}
+        run: |
+          set -euo pipefail
+          python3 - build/hub-release/hub-manifest.json "$RELEASE" > build/release-notes.md <<'PY'
+          import json
+          import sys
+
+          manifest = json.load(open(sys.argv[1], encoding="utf-8"))
+          release = sys.argv[2]
+          lines = [
+              f"Wrapper modules released together as `{release}`.",
+              "",
+              "Maven Central publication is merged into a single deployment by",
+              "[maven-central-publishing](https://github.com/__OWNER__/maven-central-publishing).",
+              "",
+              "| Coordinate | Archive | Files | Bytes |",
+              "| --- | --- | ---: | ---: |",
+          ]
+          for entry in manifest["archives"]:
+              lines.append(
+                  f"| `{entry['coordinate']}` | `{entry['archive']}` | {entry['files']} | {entry['bytes']} |"
+              )
+          print("\n".join(lines))
+          PY
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE: ${{ inputs.release }}
+        run: |
+          set -euo pipefail
+          # Retries re-upload with --clobber; the tag itself is never moved.
+          if ! gh release view "$RELEASE" >/dev/null 2>&1; then
+            gh release create "$RELEASE" \
+              --target "$GITHUB_SHA" \
+              --title "$RELEASE" \
+              --notes-file build/release-notes.md
+          fi
+          gh release upload "$RELEASE" build/hub-release/archives/*.tar.xz --clobber
+
+      # GITHUB_TOKEN is scoped to this repository, so it cannot write to the hub. The hub token is a
+      # PAT with contents:write and actions:write on the hub only.
+      - name: Check the hub token
+        if: inputs.register || inputs.verify
+        env:
+          GH_TOKEN: ${{ secrets.HUB_RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN:-}" ]; then
+            echo "::error::set HUB_RELEASE_TOKEN (fine-grained PAT: contents:write + actions:write on $HUB_REPOSITORY)"
+            exit 1
+          fi
+          gh api "repos/$HUB_REPOSITORY" --jq '"hub token can read " + .full_name'
+
+      - name: Register the archives with the hub
+        if: inputs.register
+        env:
+          GH_TOKEN: ${{ secrets.HUB_RELEASE_TOKEN }}
+          RELEASE: ${{ inputs.release }}
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/hub"
+          git clone --depth 1 --branch "$HUB_BRANCH" \
+            "https://x-access-token:${GH_TOKEN}@github.com/${HUB_REPOSITORY}.git" "$work"
+          mkdir -p "$work/registry/${GITHUB_REPOSITORY}"
+          cp build/hub-release/registry/"${GITHUB_REPOSITORY}"/*.json "$work/registry/${GITHUB_REPOSITORY}/"
+          git -C "$work" config user.name "github-actions[bot]"
+          git -C "$work" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$work" add --all
+          if git -C "$work" diff --cached --quiet; then
+            echo "registrations unchanged"
+            exit 0
+          fi
+          git -C "$work" commit -m "Register ${GITHUB_REPOSITORY} ${RELEASE}"
+          # The hub's cleanup job also pushes to this branch; rebase rather than fail on a race.
+          for attempt in 1 2 3; do
+            if git -C "$work" push origin "HEAD:${HUB_BRANCH}"; then
+              exit 0
+            fi
+            echo "push attempt ${attempt} failed, rebasing"
+            git -C "$work" pull --rebase --autostash origin "$HUB_BRANCH"
+          done
+          echo "::error::could not push the registrations to ${HUB_REPOSITORY}"
+          exit 1
+
+      - name: Run the hub bundle dry run
+        if: inputs.verify
+        env:
+          GH_TOKEN: ${{ secrets.HUB_RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          previous="$(gh run list --repo "$HUB_REPOSITORY" --workflow hub.yml \
+            --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+          gh workflow run hub.yml --repo "$HUB_REPOSITORY" --ref "$HUB_BRANCH" -f upload=false
+
+          run=""
+          for _ in $(seq 1 30); do
+            sleep 5
+            candidate="$(gh run list --repo "$HUB_REPOSITORY" --workflow hub.yml \
+              --event workflow_dispatch --limit 1 --json databaseId --jq '.[0].databaseId // 0')"
+            if [ -n "$candidate" ] && [ "$candidate" != "0" ] && [ "$candidate" != "$previous" ]; then
+              run="$candidate"
+              break
+            fi
+          done
+          if [ -z "$run" ]; then
+            echo "::error::the hub workflow did not start"
+            exit 1
+          fi
+
+          # Non-zero when the dry run fails, so the release job fails with it.
+          gh run watch "$run" --repo "$HUB_REPOSITORY" --exit-status
+          gh run view "$run" --repo "$HUB_REPOSITORY" --json url,conclusion \
+            --jq '"hub bundle dry run \(.conclusion): \(.url)"'
+
+      - name: Summarize
+        if: always()
+        env:
+          RELEASE: ${{ inputs.release }}
+        run: |
+          set -euo pipefail
+          {
+            echo "### Release ${RELEASE}"
+            echo
+            if [ -f build/release-notes.md ]; then cat build/release-notes.md; fi
+            echo
+            echo "Release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${RELEASE}"
+            echo
+            echo "Central upload is a separate, manual hub run with \`upload=true\`."
+          } >> "$GITHUB_STEP_SUMMARY"
