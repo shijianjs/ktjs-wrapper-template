@@ -42,6 +42,24 @@ wrapper 的目标是让上游 npm 包暴露的公开 API 在 Kotlin/JS 侧都能
 - 修改生成器后重新生成并跑浏览器测试；升级上游版本先刷新 npm 依赖（如 `./gradlew kotlinNpmInstall`），
   让 manifest 更新后再生成。
 
+### 类型映射与 `dynamic`
+
+上游 TypeScript 声明了类型的成员必须映射成 Kotlin 类型，`dynamic` 只保留给 Kotlin 无法表达语义的情况：
+
+- `any`、`unknown`、`object`、manifest 里缺类型的成员：`kotlin.js.JsAny`，可能为 `null` 时用
+  `kotlin.js.JsAny?`。用 `JsAny` 而不是 `dynamic`，调用与赋值才会被编译器检查。
+- 数组、集合、字典、日期、Promise 映射到对应类型：`Array<...>`、`js.collections.JsSet<...>`、
+  `js.objects.Record<...>`、`kotlin.js.Date`、`kotlin.js.Promise<T>`。
+- 回调按上游签名展开成 Kotlin 函数类型；manifest 只写 `function` 而上游 `.d.ts` 有签名的，按 `.d.ts`
+  手工补上。
+- manifest 里只有名字、没有结构信息的具名类型，在对应包内手写 `XxxTypes.kt`（`external interface` /
+  `typealias`，不带生成标记），生成器通过别名表引用，重跑生成不会丢。
+- 仍允许 `dynamic` 的情况：原始类型与 JS 类型混合的联合（`string | number`、`HTMLElement | string`）、
+  确实没有签名信息的裸 `Function`。不要用 `dynamic` 表示「懒得写类型」。
+
+`kotlin.js.JsAny` 需要 `kotlin.js.ExperimentalWasmJsInterop` opt-in；在根构建脚本里对所有 KMP 子模块
+统一添加 `compilerOptions { optIn.add("kotlin.js.ExperimentalWasmJsInterop") }`。
+
 ### 新增模块
 
 1. 复制 `scaffold/module` 为 `__PREFIX__-<name>`，替换文件里的所有占位符（包名、npm 包名、项目名）。
@@ -60,9 +78,9 @@ wrapper 的目标是让上游 npm 包暴露的公开 API 在 Kotlin/JS 侧都能
 
 - DOM 元素：`web.html.HTMLElement`
 - 全局 document：`web.dom.document`
-- 创建元素：`document.createElement(HtmlTagName.xxx)`，无需 `unsafeCast`
-- 自定义元素标签名参照 `web.html.HtmlTagName`，为每个 Web Component 提供
-  `object XxxTagName { inline val xxx: TagName<XxxElement> }`，把标签名集中在一处
+- 创建元素：`document.createElement(<Project>TagName.xxx)`，无需 `unsafeCast`
+- 所有自定义元素标签名集中在根包的单个对象里，每个元素一个
+  `inline val xxx: TagName<XxxElement>`；不要在组件包里各自声明 `XxxTagName`，同一标签名只能有一处声明。
 
 两套类型运行时指向同一个对象，但编译器不视为同一类型；wrapper 的公开 API 一旦用 `org.w3c.dom.*`，
 kotlin-browser 项目就无法直接使用。
