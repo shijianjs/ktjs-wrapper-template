@@ -54,8 +54,12 @@ wrapper 的目标是让上游 npm 包暴露的公开 API 在 Kotlin/JS 侧都能
   手工补上。
 - manifest 里只有名字、没有结构信息的具名类型，在对应包内手写 `XxxTypes.kt`（`external interface` /
   `typealias`，不带生成标记），生成器通过别名表引用，重跑生成不会丢。
-- 仍允许 `dynamic` 的情况：原始类型与 JS 类型混合的联合（`string | number`、`HTMLElement | string`）、
-  确实没有签名信息的裸 `Function`。不要用 `dynamic` 表示「懒得写类型」。
+- 联合类型映射为不透明 `external interface` + 每个成员一个同名工厂函数，照搬 kotlin-wrappers 的
+  `web.http.BodyInit` 写法（`external interface BodyInit` + `BodyInit(value: String)` 等）。例如
+  `string | number` → `StringOrDouble`，`HTMLElement | string` → `HTMLElementOrString`，调用方显式包装。
+  同一个联合按 Kotlin 包去重，写进生成的 `XxxUnions.kt`；联合里出现 `JsAny` 时直接收敛为 `JsAny`。
+- 只有确实没有任何类型信息时才保留 `dynamic`（例如上游只写裸 `Function`，且实现与 `.d.ts` 都无法推断
+  签名）。能按实现补签名的，优先在生成器的签名覆盖表里补上，不要用 `dynamic` 表示「懒得写类型」。
 
 `kotlin.js.JsAny` 需要 `kotlin.js.ExperimentalWasmJsInterop` opt-in；在根构建脚本里对所有 KMP 子模块
 统一添加 `compilerOptions { optIn.add("kotlin.js.ExperimentalWasmJsInterop") }`。
