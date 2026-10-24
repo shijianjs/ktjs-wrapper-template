@@ -113,6 +113,31 @@ Gradle 9 / JDK 25。升级时注意 2.0 的插件 ID 是 `dev.detekt`，规则�
   `source-map-loader` 的 peer dependency 装第二份，测试包只引到其中一份时构建会报
   `The 'compilation' argument must be an instance of Compilation`。
 
+## 测试覆盖
+
+目标是「除明确不做的功能外，覆盖全部 wrapper 代码」，完整度按下面五条判定：
+
+1. **覆盖全部 Kotlin 代码**：`src/jsMain` 里每个包都要有对应测试目录，覆盖公开 API——工厂/注册函数、
+   标签名常量、attribute / event 常量、静态入口对象、mixin 类型归属、同名属性改名映射、不透明类型与
+   联合类型边界、模块级导出与手写包。只有「明确放弃的功能」允许没有用例。
+2. **优先翻译官方测试**：上游源码树里每个包的 `test/*.test.js` 是首选用例来源。Kotlin 测试目录与子模块、
+   包名对齐（`src/jsTest/kotlin/<包>/`），文件名与上游文件对应（`<name>.test.js` → `<Name>Test.kt`），
+   测试函数名对应上游 `it(...)`，KDoc 注明上游文件路径。上游的测试辅助库用模块内等价的辅助函数替代
+   （挂载、下一帧、等待更新、等待 resize、超时、按键、事件监听、输入、点击、shadow 查询、计算样式等），
+   不要在用例里重复实现。
+3. **按锁定版本写断言**：上游源码树可能比 `package.json` 锁定的 npm 版本新（例如源码树是
+   `25.4.0-alpha4`、锁的是 `25.3.4`），属性名与默认值会不一样（`headingLevel` vs `titleHeadingLevel`、
+   哪些属性反射到 attribute、哪些属性默认是 `undefined`）。写用例前先用 `custom-elements.json` 核对锁定
+   的版本，KDoc 里注明差异，不要把源码树的行为当成断言。
+4. **上游没覆盖、或 wrapper 独有的部分必须补测**，数量不少于上游同类用例；**明确放弃的功能**要写进项目
+   自己的说明，避免反复讨论。常见放弃项：视觉/截图测试、shadow DOM 结构快照、依赖私有成员（`_foo`、`$`）
+   的内部测试、上游模板语法专用的入口（如 Lit 指令）、需要真实键鼠序列（`sendKeys`、指针拖拽）或真实
+   文件上传的用例。
+5. **异步用例**：Kotlin/JS 的 `@Test` 函数直接返回 `Promise<Unit>`，不要 sleep，也不要引入协程测试库。
+
+**测试发现 bug 时修 wrapper，不改断言**：能定位到生成器的问题就修生成器并重新生成，提交信息里说明。
+上游新增或修改测试时同步翻译，保持用例名可追溯。
+
 ## UI 编程约定
 
 以下为维护者的通用 UI 编码偏好。新增任何 UI 代码（Web Component 包装、演示页）都按此执行。
