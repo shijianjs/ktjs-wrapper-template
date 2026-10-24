@@ -109,8 +109,9 @@ Gradle 9 / JDK 25。升级时注意 2.0 的插件 ID 是 `dev.detekt`，规则�
 - 浏览器测试使用新版测试 DSL：`@OptIn(ExperimentalJsTestDsl::class) browser { test { chromium() } }`，
   由 Playwright 驱动并按需安装浏览器。Karma 已废弃，不要新增 `testTask { useKarma { ... } }`。
 - Playwright 默认从官方 CDN（`cdn.playwright.dev`）下载 Chrome / FFmpeg，国内经常 0 速度。本机可把下载源
-  指到国内镜像：设环境变量 `PLAYWRIGHT_DOWNLOAD_HOST=https://cdn.npmmirror.com/binaries/playwright`
-  （该镜像同样镜像 `builds/cft/...` 路径；先 `./gradlew --stop` 让新 daemon 继承变量，再跑安装任务）。
+  指到国内镜像：设环境变量 `PLAYWRIGHT_DOWNLOAD_HOST=https://npmmirror.com/mirrors/playwright/`
+  （**就用这个地址**；`https://cdn.npmmirror.com/binaries/playwright` 看似可用、实测会直接报错，别用）。
+  先 `./gradlew --stop` 让新 daemon 继承变量，再跑安装任务，实测 20 多秒装完。
   `kotlinInstallPlaywrightBrowsers` 是 `DefaultTask`、内部用 `ExecOperations` 起 node，任务本身不接受
   `environment` 配置，所以只能靠环境变量注入，不能用 `init.d` 脚本改任务。**只在本机生效，不要提交到仓库，
   也不要写进工作流——CI 走官方源。**
@@ -142,6 +143,13 @@ Gradle 9 / JDK 25。升级时注意 2.0 的插件 ID 是 `dev.detekt`，规则�
    的内部测试、上游模板语法专用的入口（如 Lit 指令）、需要真实键鼠序列（`sendKeys`、指针拖拽）或真实
    文件上传的用例。
 5. **异步用例**：Kotlin/JS 的 `@Test` 函数直接返回 `Promise<Unit>`，不要 sleep，也不要引入协程测试库。
+6. **测试里的 DOM 访问走类型安全 API**：优先用 kotlin-browser 的 `web.dom` 类型（`element.shadowRoot`、
+   `querySelector`、`getAttribute`、`textContent`）和测试辅助里的 `shadowQuery` / `shadowQueryAll` /
+   `shadowQueryNode` / `query` / `queryAll`，不要在 `js(...)` 里手写 DOM 查询——测试代码同样受编译期检查，
+   这是对 wrapper 类型的一次校验。`js(...)` 只留给确实没有类型包装的地方（浏览器 API、受保护成员、
+   对象字面量 / 事件 init）。注意 `Element.id` 的类型是 `ElementId` 而非 `String`，且强转到
+   `HTMLButtonElement` 之类的原生接口会在运行时校验（自定义元素会抛 CCE），要按需改用 `getAttribute` /
+   `hasAttribute`。
 
 **测试发现 bug 时修 wrapper，不改断言**：能定位到生成器的问题就修生成器并重新生成，提交信息里说明。
 上游新增或修改测试时同步翻译，保持用例名可追溯。
