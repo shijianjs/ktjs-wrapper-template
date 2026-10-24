@@ -108,6 +108,14 @@ Gradle 9 / JDK 25。升级时注意 2.0 的插件 ID 是 `dev.detekt`，规则�
   `@scope/package/lib/index.js`，不要写包名；子路径对 CommonJS 与 ESM 链接都可用。
 - 浏览器测试使用新版测试 DSL：`@OptIn(ExperimentalJsTestDsl::class) browser { test { chromium() } }`，
   由 Playwright 驱动并按需安装浏览器。Karma 已废弃，不要新增 `testTask { useKarma { ... } }`。
+- Playwright 默认从官方 CDN（`cdn.playwright.dev`）下载 Chrome / FFmpeg，国内经常 0 速度。本机可把下载源
+  指到国内镜像：设环境变量 `PLAYWRIGHT_DOWNLOAD_HOST=https://cdn.npmmirror.com/binaries/playwright`
+  （该镜像同样镜像 `builds/cft/...` 路径；先 `./gradlew --stop` 让新 daemon 继承变量，再跑安装任务）。
+  `kotlinInstallPlaywrightBrowsers` 是 `DefaultTask`、内部用 `ExecOperations` 起 node，任务本身不接受
+  `environment` 配置，所以只能靠环境变量注入，不能用 `init.d` 脚本改任务。**只在本机生效，不要提交到仓库，
+  也不要写进工作流——CI 走官方源。**
+- 大文件或网络盘上 Gradle 的文件监听可能漏掉改动，`compileTestKotlinJs` 会误报 UP-TO-DATE；本机加
+  `-Dorg.gradle.vfs.watch=false` 强制重新检测即可（同样只是本机 workaround，不进仓库）。
 - Node 侧的 `jsNodeTest` 同样按 ESM 产物运行。
 - 根构建脚本用 `NpmExtension.override("webpack", ...)` 固定一份 webpack：npm workspace 会为
   `source-map-loader` 的 peer dependency 装第二份，测试包只引到其中一份时构建会报
