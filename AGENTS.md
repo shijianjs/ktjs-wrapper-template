@@ -409,11 +409,13 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 
 - `demo` 只消费公共 API，不发布、也不进入 Dokka。根 `build.gradle.kts` 的发布与 Dokka 配置按
   `__PREFIX__-` 前缀过滤子模块，新增非发布模块时沿用该约定。
-- 端到端测试是 `demo/e2e/demo-page.test.mjs`：Playwright 驱动打包后的
-  `demo/build/dist/js/productionExecutable`，脚本自带静态服务器。运行 `./gradlew :demo:e2eTest`；
-  它不在 `check` 里，CI 在 `pagesSite` 之后单独执行。Playwright 与 Chromium 复用 Kotlin/JS npm
-  workspace（`build/js`）和第一个 wrapper 模块的 `kotlinInstallPlaywrightBrowsers`，脚本用 PATH 上的
-  `node` 启动。
+- 端到端测试是 `demo` 的 JVM 目标里的 Playwright JUnit 5 套件（`demo/src/jvmTest/kotlin/demo/e2e`）：
+  Playwright 驱动打包后的 `demo/build/dist/js/productionExecutable`，`DemoServer` 用 Hutool 的
+  `SimpleServer` 在测试 JVM 内提供静态文件。运行 `./gradlew :demo:e2eTest`；它不在 `check` 里，CI 在
+  `pagesSite` 之后单独执行。`jvmTest` 本身被禁用，避免 `build` / `check` 依赖浏览器。Playwright 与
+  Chromium 复用第一个 wrapper 模块的 `kotlinInstallPlaywrightBrowsers`，因此
+  `com.microsoft.playwright:playwright` 的版本必须与 KGP 安装的 npm `playwright` 一致（当前都是
+  1.61.0），升级 KGP 后若浏览器版本不匹配，重新跑安装任务。
 - `./gradlew pagesSite` 把 demo 与 `build/dokka/html` 组装到 `build/pages`：演示页在根目录，API 文档在
   `api/`。演示页内部链接使用相对路径。
 - Dokka 2.2.0 同时应用到根项目和所有 wrapper 子模块；聚合入口是根项目的 `dependencies { dokka(...) }`，

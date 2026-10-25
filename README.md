@@ -92,7 +92,7 @@ Kotlin 包名完全由 `--package` 决定，新增模块时自行选择子包并
 ├── scaffold/
 │   ├── module/                   # 模块骨架，新增模块时复制
 │   └── project/                  # 生成后的项目 README
-├── demo/                         # Pages 演示页 + Playwright e2e
+├── demo/                         # Pages 演示页 + Kotlin/JVM Playwright e2e
 └── .github/workflows/            # CI、Pages、Release、Dependabot auto-merge
 ```
 
@@ -106,7 +106,8 @@ Kotlin 包名完全由 `--package` 决定，新增模块时自行选择子包并
 
 - JDK 17+（构建使用 Gradle 9.4.1）
 - Python 3（初始化脚本与发布脚本只用标准库）
-- Node.js 由 Kotlin Gradle 插件自动下载；Playwright 首次运行时下载 Chromium
+- Node.js 由 Kotlin Gradle 插件自动下载；Playwright 首次运行时下载 Chromium。演示页的端到端测试是
+  Kotlin/JVM 的 JUnit 5 用例，复用同一份浏览器。
 
 ## 许可证
 
