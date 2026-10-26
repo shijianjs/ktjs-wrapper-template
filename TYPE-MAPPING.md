@@ -257,6 +257,8 @@ fun <T> Constructor(value: JsAny): Constructor<T> = value.unsafeCast<Constructor
 - 子路径入口（`pkg/core`、`pkg/charts`）放在同一个 Kotlin 包内，用文件或 `external object` 区分。
 - 大包按上游目录 / 主题拆文件（`XxxTypes.kt`、`XxxLiterals.kt`、`XxxOptions.kt`），不要把上千行声明堆进
   一个文件；手写类型与生成类型分开，便于重新生成。
+- 选项类型数量多时按主题继续拆（组件 / 笛卡尔系列 / 层级系列 / 关系系列……），每个文件 400~600 行为宜；
+  字面量也按主题拆（组件级一份、系列级一份），不要为了少建文件把两类混在一起。
 - `@JsModule` 声明按 ESM 语义写：顶层函数/类会生成具名导入；顶层 `external val` 配 `@JsName` 会生成
   default import，对只有具名导出的包必须写成 `@JsModule` + `external object` + 具名属性。
 - 模块级函数/变量拆成 `XxxExports.kt`（`@file:JsModule` + external 声明）与 `XxxValues.kt`（公开
@@ -270,7 +272,76 @@ fun <T> Constructor(value: JsAny): Constructor<T> = value.unsafeCast<Constructor
 - 每个公开声明都要 KDoc：上游有说明就翻译，没有就按源码行为写；字面量常量写清对应字符串与含义。
 - 联合类型 KDoc 里列出全部成员；不透明类型说明「怎么创建」（哪个工厂函数）。
 
-## 12. 落地检查清单
+## 12. 上游写法与 Kotlin 表达力不匹配时
+
+上游 `.d.ts` 里有一些写法 Kotlin 的 `external interface` 表达不了。这些情况有固定处理方式，不要因为「写不出来」就退回 `JsAny`：
+
+### `Omit<X, 'k'> & { k: Y }`
+
+Kotlin 不能在子接口里删除或改类型地重声明继承来的成员（`var` 覆盖要求类型完全相同），所以不要试图 `: X` 然后重声明 `k`。
+
+- 让新类型继承**更浅**的 mixin，再把剩下的成员逐个声明出来：
+
+```kotlin
+// 上游 `Omit<LineStyleOption, 'color'> & { color?: GaugeColorStop[] }`
+external interface GaugeAxisLineStyleOption : ShadowOption {
+    var color: Array<GaugeColorStop>?
+    var width: Double?
+    var type: ZRLineType?
+    // …LineStyleOption 的其余成员
+}
+```
+
+- 只有上游单纯把 `k` 收窄成子类型时才可以直接复用；收窄成**另一类类型**时必须走上面那条。
+- 收窄是 `var`、Kotlin 无法表达时，保留基类型并在 KDoc 写清限制（例如系列级 `itemStyle` 已写进未建模清单）。
+
+### `data?: unknown` 被各子类型收窄
+
+上游把 `data` 声明在基接口上是 `unknown`（或 `unknown[]`），每个具体类型再收窄成自己的 item 类型。Kotlin 无法收窄 `var`，因此：
+
+- **不要在基接口声明 `data`**（会挡住子接口的精确类型）；把它放到每个具体类型上：
+
+```kotlin
+external interface MarkOption { /* 没有 data */ }
+
+external interface MarkPointOption : MarkOption {
+    var data: Array<MarkPointDataItemOption>?
+}
+```
+
+- 反过来，基接口已经有 `data`、又需要**更富**的 item 时（如层级图的节点），让 item 类型继承
+  `OptionDataItemObject`，再用 `items(...)` 放进通用的 `Array<OptionDataItem?>`。上游没有显式继承但字段一致时同样这样做，并在 KDoc 注明。
+
+### 元组类型 `[A, B]`
+
+JS 侧要的是真数组，不能用对象顶替：
+
+```kotlin
+/** 上游 `[number, ColorString]`。 */
+external interface GaugeColorStop
+
+fun gaugeColorStop(offset: Double, color: String): GaugeColorStop =
+    arrayOf<Any>(offset, color).unsafeCast<GaugeColorStop>()
+```
+
+- 类型保持不透明，只有工厂能造值；调用方不自己拼数组。
+- 数组形式的 `DecalDashArrayX`、`ZRLineType` 等同样用不透明接口 + 数组工厂。
+
+### `T | "none"`
+
+`number[] | "none"`、`ColorString[] | "none"`、`DecalObject[] | "none"` 这类「数组或关键字」用不透明接口 + 一个数组工厂 + 一个 `String` 工厂：`DoubleArrayOrNone`、`ColorArrayOrNone`、`DecalArrayOrNone`。
+
+### `boolean | "a" | "b"`
+
+在字面量类型（第 4 节）之外补一个布尔工厂，把 `false` 也收进同一个类型，例如
+`NodeClickBehavior(false)` / `FocusNodeAdjacency(true)`；需要 `false` 有名字时再给常量（`NodeClickBehaviors.none`）。
+
+### 上游真的只写了 `unknown`
+
+仍然用 `JsAny`，并在 KDoc 里写明「上游类型是 `unknown`，因此这里是不透明的」（例如
+`LegendDataItemOption.tooltip`、`CustomSeriesRenderItemParams.itemPayload` 的值类型）。这是第 8 节允许的用法，不是偷懒。
+
+## 13. 落地检查清单
 
 改完一个类型后逐条过：
 
@@ -281,7 +352,8 @@ fun <T> Constructor(value: JsAny): Constructor<T> = value.unsafeCast<Constructor
 5. 对象字面量用 `unsafeJso`，没有自己造 builder、没有 `js("...")`；
 6. 回调是函数类型，异步是 `Promise`，集合是 `Array` / `JsSet` / `Record`；
 7. 没有 `org.w3c.dom.*` / `kotlinx.browser.*`（detekt `ForbiddenImport` 会拦）；
-8. `./gradlew build` 通过（含 detekt、浏览器测试），且测试真的调用了上游库验证字段值。
+8. 上游的 `Omit<...> & { ... }`、`data` 收窄、元组、`T | "none"` 已按第 12 节处理，而不是退化；
+9. `./gradlew build` 通过（含 detekt、浏览器测试），且测试真的调用了上游库验证字段值。
 
 ## 反模式速查
 
@@ -295,4 +367,7 @@ var formatter: dynamic                             // ❌ 上游有签名
 enum class AxisType { value, category }            // ❌ 运行时不是字符串
 object AxisType { const val CATEGORY = "category" } // ❌ 字段仍是 String，拼错不报错
 class OptionBuilder { fun build(): JsAny }         // ❌ 用 unsafeJso
+external interface S : LineStyleOption { var color: Array<Stop>? } // ❌ 与基类成员类型冲突，见第 12 节
+override var data: Array<NodeOption>?              // ❌ 基接口是 unknown，var 不能收窄
+fun stop(o: Double, c: String): Stop = unsafeJso { offset = o; color = c } // ❌ 上游是数组元组
 ```
