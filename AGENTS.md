@@ -32,8 +32,8 @@ wrapper 的目标是让上游 npm 包暴露的公开 API 在 Kotlin/JS 侧都能
 
 - 完整度：组件、mixin、静态成员、模块级函数与变量、事件、属性名常量、主题入口（CSS 文件路径、
   `registerStyles` / `unsafeCSS` 等）和图标集注册函数都要在 Kotlin 侧可用。
-- 每个 npm 包对应一个同名 Kotlin 包，文件放在 `src/jsMain/kotlin/<包路径>/`。包很大时继续按上游目录
-  拆分文件，不要把所有声明堆进一个文件。
+- 每个 npm 包对应一个同名 Kotlin 包，文件放在 `src/jsMain/kotlin/<包路径>/`。这是包划分，不产生新的
+  Gradle 模块。包很大时继续按上游目录拆分文件，不要把所有声明堆进一个文件。
 - mixin 用 `external interface` 建模，继承关系照抄上游；元素类声明为
   `abstract external class XxxElement : web.html.HTMLElement, MixinA, MixinB`，类体只重复自己声明的
   成员。上游官方框架绑定（如 Java/Flow 组件）如何组合这些能力，可以作为建模参考。
@@ -69,9 +69,20 @@ wrapper 的目标是让上游 npm 包暴露的公开 API 在 Kotlin/JS 侧都能
   同一个联合按 Kotlin 包去重，写进生成的 `XxxUnions.kt`；联合里出现 `JsAny` 时直接收敛为 `JsAny`。
 - 只有确实没有任何类型信息时才保留 `dynamic`（例如上游只写裸 `Function`，且实现与 `.d.ts` 都无法推断
   签名）。能按实现补签名的，优先在生成器的签名覆盖表里补上，不要用 `dynamic` 表示「懒得写类型」。
+- 除联合类型外，`external interface` 不要写 `: JsAny` 父类型：external 类型本身就属于 `JsAny`，多写
+  一层只是噪声。字符串字面量用 `sealed external interface` + `Xxx(String)` 工厂 + `Xxxs` 常量对象；
+  CSS 语义的字段优先用 `web.cssom` / `web.canvas` 现成类型；普通对象用 `js.objects.unsafeJso`，
+  不要自造 builder 或用 `js("({})")`。
 
 `kotlin.js.JsAny` 需要 `kotlin.js.ExperimentalWasmJsInterop` opt-in；在根构建脚本里对所有 KMP 子模块
 统一添加 `compilerOptions { optIn.add("kotlin.js.ExperimentalWasmJsInterop") }`。
+
+### 类型安全封装指南
+
+上游类型到 Kotlin 类型的完整对照与写法整理在同目录的 [TYPE-MAPPING.md](TYPE-MAPPING.md)：联合类型的
+同名工厂模式、字符串字面量的 `sealed external interface` + 常量对象、`web.cssom` / `web.canvas` 值类型、
+`js.objects.unsafeJso`、`JsAny` / `dynamic` 的边界、包与文件划分、落地检查清单和反模式速查。新增或
+修改 wrapper 声明前先读它。该文档保持通用措辞，与派生项目同步维护。
 
 ### 新增模块
 
