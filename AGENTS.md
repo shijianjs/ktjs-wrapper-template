@@ -81,9 +81,10 @@ wrapper 的目标是让上游 npm 包暴露的公开 API 在 Kotlin/JS 侧都能
 
 上游类型到 Kotlin 类型的完整对照与写法整理在同目录的 [TYPE-MAPPING.md](TYPE-MAPPING.md)：联合类型的
 同名工厂模式、字符串字面量的 `sealed external interface` + 常量对象、`web.cssom` / `web.canvas` 值类型、
-`js.objects.unsafeJso`、`JsAny` / `dynamic` 的边界、上游 `Omit<...> & { ... }` / `data` 收窄 / 元组 /
-`T | "none"` 这些 Kotlin 表达不了的写法的固定处理方式、包与文件划分、落地检查清单和反模式速查。新增或
-修改 wrapper 声明前先读它。该文档保持通用措辞，与派生项目同步维护。
+`js.objects.unsafeJso`、上游 mixin 与 Kotlin 公共基接口的取舍、`JsAny` / `dynamic` 的边界、上游
+`Omit<...> & { ... }` / `data` 收窄 / 元组 / `T | "none"` 这些 Kotlin 表达不了的写法的固定处理方式、包与
+文件划分、落地检查清单和反模式速查。新增或修改 wrapper 声明前先读它。该文档保持通用措辞，与派生项目
+同步维护。
 
 `dynamic` 只留给「上游自己也没写类型、实现也无法推断」的情况；上游写了 `any` / `unknown` 才用 `JsAny`，
 且要在 KDoc 里注明「上游类型是 `unknown`」。退化到这两者之前，先按 TYPE-MAPPING 第 12 节过一遍。

@@ -54,6 +54,26 @@ external interface TitleOption {
 - 只读字段用 `val`，回调字段直接用函数类型。
 - `external interface` 不能有方法体、不能有构造器、不能实现接口；有行为的对象用 `external class`（第 9 节）。
 - 不要在 `external interface` 里放 `@JsName` 以外的注解，也不要放 companion（除非确实是静态成员）。
+- **上游的 mixin 只声明一个 Kotlin 接口**，凡是上游继承了它的类型都在 Kotlin 里继承同一个接口，不要各自
+  复制一遍字段：字段类型要改时只改一处，调用方也能把实例赋给 mixin 类型。
+
+```kotlin
+// 上游 `interface SymbolOptionMixin<T>` 被十几个 series / item 继承
+external interface SymbolOptionMixin {
+    var symbol: SymbolShape?
+    var symbolSize: SymbolSize?
+    var symbolRotate: SymbolRotate?
+    var symbolKeepAspect: Boolean?
+    var symbolOffset: SymbolOffset?
+}
+
+external interface LineSeriesOption : SeriesOption, SymbolOptionMixin { /* 只写自己的成员 */ }
+```
+
+- 反过来，**Kotlin 侧自建的公共基接口不要收进「各具体类型里类型不同」的成员**。上游 `markPoint.symbol`
+  是 `string | callback`、`markLine.symbol` 是 `string[] | string`，写进公共基接口就只剩并集；应当把这个
+  成员下放到各具体类型，基接口只保留真正一致的部分。判断标准：上游各具体类型对同名成员的声明是否逐字
+  相同。
 
 ## 3. 联合类型：不透明接口 + 同名构造函数
 
@@ -92,7 +112,9 @@ inline fun StringOrDouble(value: Double): StringOrDouble = value.unsafeCast<Stri
 - 命名按上游顺序拼接（`StringOrDouble`、`BooleanOrDouble`、`StringOrDoubleOrArray`）；上游是
   `HTMLElement | string` 就是 `HTMLElementOrString`。
 - 联合里出现 `JsAny` / `any` 分支时，整个联合收敛为 `JsAny`：那一刻已经无法区分分支，包装没有意义。
-- 联合在多个文件出现时按 **Kotlin 包去重**，只声明一次，避免同名接口在不同文件里冲突。
+- 联合在多个文件出现时按 **Kotlin 包去重**，只声明一次，避免同名接口在不同文件里冲突；**同一语义的联合
+  在所有字段上都用同一个类型**（如 symbol 的 shape / size / rotate / offset 各一个联合，被所有 series 和
+  item 复用），不要为每个字段另造一个近似类型。
 - 联合的成员本身是结构类型时，同样先声明不透明接口再嵌套工厂：
 
 ```kotlin
@@ -335,6 +357,12 @@ fun gaugeColorStop(offset: Double, color: String): GaugeColorStop =
 
 在字面量类型（第 4 节）之外补一个布尔工厂，把 `false` 也收进同一个类型，例如
 `NodeClickBehavior(false)` / `FocusNodeAdjacency(true)`；需要 `false` 有名字时再给常量（`NodeClickBehaviors.none`）。
+
+### 关键字字段要成组处理
+
+上游同一批成员里的关键字字段（如 `layout` / `edgeShape` / `symbolPosition` / `axis.position`）往往是同一轮
+书面里补的。补一个字段时顺手把同一文件里性质相同的字段一起补上，否则会出现「同一个 interface 里一个字段
+是字面量、隔壁字段还是 `String`」的割裂；确实这轮不做的，写进 TODO 并说明原因。
 
 ### 上游真的只写了 `unknown`
 
