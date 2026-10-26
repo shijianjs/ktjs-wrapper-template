@@ -191,11 +191,27 @@ Gradle 9 / JDK 25。升级时注意 2.0 的插件 ID 是 `dev.detekt`，规则�
 需要反复访问的节点一律存成字段，直接对字段调方法；不要用 `querySelector` 当组件内部的状态管理方式。
 `querySelector` 只允许用于「从外部挂载点找目标」这类不属于组件自身结构的场景。
 
+### 优先用类型化 DOM 属性，`setAttribute` 只作兜底
+
+绑定提供了类型化属性时，直接给属性赋值，不要用 `setAttribute` 传字符串：
+
+- 标准属性：`element.id = ElementId("status")`、`button.type = ButtonType.button`、
+  `element.className = ClassName("chart")`、`element.hidden = true`、`element.title = "..."`。
+- ARIA：`element.role = "img"`、`element.ariaLabel = "..."`、`element.ariaLive = "polite"`。
+- 内联样式：`element.style.width = "400px"`、`element.style.height = "300px"`，不要拼一整条
+  `style` 字符串。
+- 只有绑定里没有类型化包装的属性（`data-*`、自定义 attribute、上游组件声明的 attribute）才用
+  `setAttribute` / `removeAttribute`。
+
+这样属性名和值类型都由编译器检查；`setAttribute` 里的字符串拼错不会报错。演示页和测试辅助代码同样
+适用这条规则。
+
 ### 更新局部、直接、明确，不设通用刷新机制
 
 状态变化只改相关的那几个节点，用命名的领域 setter 表达（如 `setResult` / `setLoading`），而不是把整个
-UI 当成 data 的函数重算。用标准 DOM API 直说：`textContent`、`setAttribute` / `removeAttribute`、
-`classList.add/remove/toggle`、`hidden`、`disabled`、`value`、`href` / `src` 赋值等。
+UI 当成 data 的函数重算。用标准 DOM API 直说：`textContent`、类型化属性赋值、`classList.add/remove/toggle`、
+`hidden`、`disabled`、`value`、`href` / `src` 赋值等；只有找不到类型化属性时才退回 `setAttribute` /
+`removeAttribute`。
 
 禁止实现 `render()` / `rebuild()` / `rerender()` 这类通用刷新入口；禁止因为一个字段变化就重建整个子树；
 禁止用「替换子树」模拟响应式更新：
