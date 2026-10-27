@@ -340,13 +340,18 @@ external interface LineSeriesOption : SeriesOption {
 - 命名统一用 `typed<原字段名>`：它表示「同一个字段的强类型视图」，不是第 9 节里为了避开 DOM 同名冲突的 `Property` 后缀。
 - 基接口保留可写 `String` 访问器，子类型额外提供收窄类型；不要反过来把基接口改成联合，子类型仍然收窄不了，收益更小。
 - 收窄后仍要补 KDoc 说明上游允许的取值，并在测试里同时验证常量字符串与「两个属性指向同一 JS 属性」。
-- 只有「收窄成一组关键字」时值得这么做；上游把字段收窄成另一套复杂对象（系列级 `itemStyle` / `label`）时，保留基类型并在 KDoc 写清限制。
+- 只有「收窄成一组关键字」时值得这么做；上游把字段收窄成另一套复杂对象（系列级 `itemStyle` / `label`）时不要这么做：那种精确类型本身就是基类型的子接口，直接 `unsafeJso<精确类型> { }` 赋给基接口字段即可，读回来时按需 `unsafeCast`。
+- 同一个做法覆盖三种收窄：关键字字段（`xAxisPosition` → `typedXAxisPosition`）、data item 的 `value` 被收窄成
+  数组或联合（`typedValue`）、以及 label 的 `rotate` 被收窄成 `number | 关键字`（`typedRotate`）。
+- 问题的边界：`@JsName` 同名字段解决的是「一个 `var` 字段被收窄」；「一个字段接受多种类型」属于第 3 节的联合
+  类型，两者常常一起用（`typedPayload: NumberOrCallback`）。
 
 ### `data?: unknown` 被各子类型收窄
 
-上游把 `data` 声明在基接口上是 `unknown`（或 `unknown[]`），每个具体类型再收窄成自己的 item 类型。Kotlin 无法收窄 `var`，因此：
+上游把 `data` 声明在基接口上是 `unknown`（或 `unknown[]`），每个具体类型再收窄成自己的 item 类型。
+Kotlin 的 `var` 覆盖要求类型完全一致，所以按基接口的角色分两种处理：
 
-- **不要在基接口声明 `data`**（会挡住子接口的精确类型）；把它放到每个具体类型上：
+- **调用方不需要按基接口读 `data`** 时，不要在基接口声明 `data`，直接放到具体类型上：
 
 ```kotlin
 external interface MarkOption { /* 没有 data */ }
@@ -356,8 +361,28 @@ external interface MarkPointOption : MarkOption {
 }
 ```
 
-- 反过来，基接口已经有 `data`、又需要**更富**的 item 时（如层级图的节点），让 item 类型继承
-  `OptionDataItemObject`，再用 `items(...)` 放进通用的 `Array<OptionDataItem?>`。上游没有显式继承但字段一致时同样这样做，并在 KDoc 注明。
+- **基接口被所有具体类型共用、且要能按基接口读**时（组件列表声明成 `Array<BaseOption>`，遍历时要读 `data`），
+  基接口保留**只读**视图，各具体类型再用 `@JsName` 同名属性给出精确的可写视图：
+
+```kotlin
+external interface BaseOption {
+    /** 通用只读视图；写数据走各具体类型的 `typedData`。 */
+    val data: Array<OptionDataItem?>?
+}
+
+external interface ConcreteOption : BaseOption {
+    /** 精确视图；与 `data` 读写同一个 JS 属性。 */
+    @JsName("data")
+    var typedData: Array<ConcreteDataItem?>?
+}
+```
+
+  - item 的「单个值 / 值数组 / item 对象」三种形态用 §3 的联合表达，每个成员一个同名工厂；item 接口继承
+    `OptionDataItemObject` 时，还可以用 `items(...)` 塞进通用视图。
+  - item 收窄了 `value`（数组，或 `Value | Value[]`）时 `OptionDataItemObject.value` 的窄类型不够用，再加
+    `@JsName("value") var typedValue`，见「继承来的 `var` 需要收窄」。
+  - 填充这些属性的 helper 一律写成泛型，元素类型从目标属性推断（`typedData = numbers(1.0, 2.0)`）；脱离目标
+    位置使用时（如 `val x = numbers(1.0)`）必须显式标注类型，否则推断不出类型参数。
 
 ### 元组类型 `[A, B]`
 
@@ -463,6 +488,8 @@ enum class AxisType { value, category }            // ❌ 运行时不是字符�
 object AxisType { const val CATEGORY = "category" } // ❌ 字段仍是 String，拼错不报错
 class OptionBuilder { fun build(): JsAny }         // ❌ 用 unsafeJso
 external interface S : LineStyleOption { var color: Array<Stop>? } // ❌ 与基类成员类型冲突，见第 12 节
-override var data: Array<NodeOption>?              // ❌ 基接口是 unknown，var 不能收窄
+override var data: Array<NodeOption>?              // ❌ 基接口的 var 不能收窄成别的类型
+val data: Array<OptionDataItem?>?                  // ✅ 基接口只留给只读视图
+@JsName("data") var typedData: Array<NodeOption>?  // ✅ 具体类型的精确可写视图
 fun stop(o: Double, c: String): Stop = unsafeJso { offset = o; color = c } // ❌ 上游是数组元组
 ```
