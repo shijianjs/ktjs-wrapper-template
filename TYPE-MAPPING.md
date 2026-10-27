@@ -388,6 +388,27 @@ fun gaugeColorStop(offset: Double, color: String): GaugeColorStop =
 书面里补的。补一个字段时顺手把同一文件里性质相同的字段一起补上，否则会出现「同一个 interface 里一个字段
 是字面量、隔壁字段还是 `String`」的割裂；确实这轮不做的，写进 TODO 并说明原因。
 
+### 泛型 mixin 与 `AnimationKeyframe<T>`
+
+上游把「元素属性包」当类型参数塞进 mixin：
+
+```ts
+interface TransitionOptionMixin<T = Record<string, any>> {
+    transition?: keyof T | (keyof T)[] | 'all';
+    enterFrom?: T;
+}
+interface AnimationKeyframe<T> extends T { easing?: AnimationEasing; percent?: number; }
+```
+
+`AnimationKeyframe<T> extends T` 这种「继承类型参数」在 Kotlin 里无法表达，所以：
+
+- 把 `GroupProps` / `PathProps` / `TextProps` / `ImageProps` 的公共成员收进一个具体的 props 接口
+  （如 `CustomElementProps`），mixin 与关键帧都用它，KDoc 注明上游的泛型参数；
+- 不要给 mixin 加类型参数再用不同的实参去继承——`T & { ... }` 的交叉类型仍然落不下来，只会让
+  调用方多写一层泛型；
+- props 里指向具体子类型（`style` / `shape`）的成员用现成的 `ZRStyleProps` / `ZRShapeProps` 顶替，
+  具体 shape 的差异在 KDoc 里列出，不另建 12 个 builder。
+
 ### 上游真的只写了 `unknown`
 
 仍然用 `JsAny`，并在 KDoc 里写明「上游类型是 `unknown`，因此这里是不透明的」（例如
