@@ -315,7 +315,31 @@ external interface GaugeAxisLineStyleOption : ShadowOption {
 ```
 
 - 只有上游单纯把 `k` 收窄成子类型时才可以直接复用；收窄成**另一类类型**时必须走上面那条。
-- 收窄是 `var`、Kotlin 无法表达时，保留基类型并在 KDoc 写清限制（例如系列级 `itemStyle` 已写进未建模清单）。
+
+### 继承来的 `var` 需要收窄（如各系列的 `coordinateSystem`）
+
+Kotlin 的 `var` 覆盖要求类型完全一致，子接口不能把基接口的 `string` 收窄成 `'cartesian2d' | 'polar'`。此时保留基接口的原字段，在子接口里再加一个映射到**同一个 JS 属性**的强类型成员：
+
+```kotlin
+external interface SeriesOption {
+    var coordinateSystem: String?
+}
+
+external interface LineSeriesOption : SeriesOption {
+    /** 上游 `'cartesian2d' | 'polar'`。 */
+    override var coordinateSystem: String?
+
+    /** [coordinateSystem] 的强类型视图；两个属性写的是同一个 JS 属性。 */
+    @JsName("coordinateSystem")
+    var typedCoordinateSystem: CartesianPolarCoordinateSystem?
+}
+```
+
+- 两个 Kotlin 属性在 JS 侧是同一个属性，赋值后互相可见；`external interface` 上重复声明并在其中一个用 `@JsName` 映射回原名，编译器接受（用探针接口在测试里验证）。
+- 命名统一用 `typed<原字段名>`：它表示「同一个字段的强类型视图」，不是第 9 节里为了避开 DOM 同名冲突的 `Property` 后缀。
+- 基接口保留可写 `String` 访问器，子类型额外提供收窄类型；不要反过来把基接口改成联合，子类型仍然收窄不了，收益更小。
+- 收窄后仍要补 KDoc 说明上游允许的取值，并在测试里同时验证常量字符串与「两个属性指向同一 JS 属性」。
+- 只有「收窄成一组关键字」时值得这么做；上游把字段收窄成另一套复杂对象（系列级 `itemStyle` / `label`）时，保留基类型并在 KDoc 写清限制。
 
 ### `data?: unknown` 被各子类型收窄
 
