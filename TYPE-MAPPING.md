@@ -235,7 +235,8 @@ external interface TooltipOption {
 - 回调直接展开成 Kotlin 函数类型，不用 `dynamic`、不用 `(dynamic) -> dynamic`。
 - 异步返回 `Promise<T>`，不要包一层 `dynamic`。
 - 集合 / 字典 / 日期 / 正则按第 1 节表格映射，别用 `Array<JsAny>` 当万能容器。
-- 上游是 `T | T[]` 时用联合类型或 `Array<T>` + 单值工厂（如 `one(x)`），不要 `Any`。
+- 上游是 `T | T[]` 时统一用 `Array<T>` + 单值工厂（如 `one(x)`），不要 `Any`，也不要同一个接口里
+  一会儿单值一会儿数组：上游运行时通常会把组件字段归一成数组，只有数组类型才能和回读结果对得上。
 
 ## 8. `JsAny` 与 `dynamic` 的边界
 
@@ -381,6 +382,27 @@ fun gaugeColorStop(offset: Double, color: String): GaugeColorStop =
 
 在字面量类型（第 4 节）之外补一个布尔工厂，把 `false` 也收进同一个类型，例如
 `NodeClickBehavior(false)` / `FocusNodeAdjacency(true)`；需要 `false` 有名字时再给常量（`NodeClickBehaviors.none`）。
+
+### 同一个联合有两个上游名字
+
+上游会把结构相同的联合声明两次，例如 `FirstParams` 与 `SecondParams` 都是
+`SingleParams | SingleParams[]`。只建一个不透明接口 + 工厂，另一个名字用 `typealias` 指过来，
+回调签名也直接写前者：
+
+```kotlin
+external interface MaybeArrayParams
+fun MaybeArrayParams(value: SingleParams): MaybeArrayParams = …
+fun MaybeArrayParams(values: Array<SingleParams>): MaybeArrayParams = …
+typealias SecondParamsName = MaybeArrayParams
+```
+
+不要建两个不透明接口：它们在 Kotlin 侧互不赋值，调用方被迫到处 `unsafeCast`，而 JS 侧其实是同一个值。
+
+### `number | callback`
+
+`duration | callback` 这类「数字或逐元素回调」用不透明接口 + 数字工厂 + 回调工厂，字段类型写成不透明
+接口，调用方显式包装（`Duration(500.0)` / `Duration { 500.0 }`）。不要加一整套 `@JsName` 同名字段来覆盖
+每个分支：上游读的是同一个 JS 属性，联合类型可以直接透传。
 
 ### 关键字字段要成组处理
 
