@@ -22,7 +22,7 @@ kotlin {
         }
 
         jvmTest.dependencies {
-            implementation("com.microsoft.playwright:playwright:1.61.0")
+            implementation("com.microsoft.playwright:playwright:1.64.0")
             implementation("cn.hutool:hutool-all:5.8.48")
             implementation("org.junit.jupiter:junit-jupiter:5.14.1")
             implementation("org.junit-pioneer:junit-pioneer:2.3.0")
