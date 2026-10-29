@@ -27,7 +27,7 @@ kotlin {
             implementation("org.junit.jupiter:junit-jupiter:5.14.1")
             implementation("org.junit-pioneer:junit-pioneer:2.3.0")
             implementation(kotlin("test-junit5"))
-            runtimeOnly("org.junit.platform:junit-platform-launcher:1.14.1")
+            runtimeOnly("org.junit.platform:junit-platform-launcher:6.1.3")
         }
     }
 }
