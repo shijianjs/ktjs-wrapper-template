@@ -10,6 +10,10 @@ updates:
       # (ExternalSystemPartialResolutionException with an empty message).
       # Keep the wrapper on the last version that syncs until the IDE is fixed.
       - dependency-name: "gradle-wrapper"
+      # Playwright Java 必须与 Kotlin Gradle Plugin 内置的 npm playwright 版本一致，否则 e2e 套件
+      # 找不到 kotlinInstallPlaywrightBrowsers 安装的浏览器。KGP 2.4.21 内置 1.61.0，等它升到
+      # 带 1.64 的版本后再放开。
+      - dependency-name: "com.microsoft.playwright:playwright"
     groups:
       kotlin:
         patterns:
