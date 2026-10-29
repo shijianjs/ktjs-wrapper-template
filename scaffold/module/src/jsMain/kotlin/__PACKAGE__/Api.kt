@@ -17,9 +17,11 @@ const val UPSTREAM_PACKAGE: String = "__NPM_PACKAGE__"
  * ```kotlin
  * @JsModule("__NPM_PACKAGE__")
  * external object UpstreamModule {
- *     fun create(options: dynamic): dynamic
+ *     fun create(options: CreateOptions): UpstreamResult
  * }
  * ```
+ *
+ * Map the upstream `.d.ts` types as described in `TYPE-MAPPING.md`; never fall back to `dynamic`.
  *
  * ESM note: an `external object` with named members compiles to named imports. A top-level
  * `external val` with `@JsName` compiles to a default import, which fails for packages that only
