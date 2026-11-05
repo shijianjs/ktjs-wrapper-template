@@ -24,41 +24,65 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # 模板仓库自己保留着 `__PROJECT__` / `__PREFIX__` 占位符，npm 不接受 `__PROJECT__-demo`
+      # 这类包名，所以在跑过 scripts/init-wrapper-project.py 之前没有可构建的东西。生成的项目里
+      # 这个占位符已经被替换，`found` 为 true，后面各步照常执行。
+      #
+      # The template repository itself still carries the `__PROJECT__` / `__PREFIX__` placeholders and
+      # npm rejects names like `__PROJECT__-demo`, so there is nothing to build until
+      # scripts/init-wrapper-project.py has run. Generated projects report found=true.
+      - name: Check whether the project is initialized
+        id: initialized
+        run: |
+          if grep -q "__PROJECT__" settings.gradle.kts 2>/dev/null; then
+            echo "Initialized: no, the template placeholders are still in place"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Initialized: yes"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Set up JDK
+        if: steps.initialized.outputs.found == 'true'
         uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "21"
 
       - name: Set up Gradle
+        if: steps.initialized.outputs.found == 'true'
         uses: gradle/actions/setup-gradle@v6
 
       - name: Install browser test dependencies
+        if: steps.initialized.outputs.found == 'true'
         run: npx --yes playwright install-deps chromium
 
       - name: Refresh npm lock file
-        if: github.actor == 'dependabot[bot]'
+        if: github.actor == 'dependabot[bot]' && steps.initialized.outputs.found == 'true'
         run: ./gradlew kotlinUpgradePackageLock
 
       - name: Build and test
+        if: steps.initialized.outputs.found == 'true'
         run: ./gradlew build --stacktrace
 
       # Validates the demo bundle and the Dokka reference that the Pages workflow deploys.
       - name: Assemble Pages site
+        if: steps.initialized.outputs.found == 'true'
         run: ./gradlew pagesSite
 
       - name: Test the demo page
+        if: steps.initialized.outputs.found == 'true'
         run: ./gradlew :demo:e2eTest
 
       - name: Upload refreshed npm lock file
-        if: github.actor == 'dependabot[bot]'
+        if: github.actor == 'dependabot[bot]' && steps.initialized.outputs.found == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: npm-lock
           path: kotlin-js-store/package-lock.json
 
       - name: Upload test reports
-        if: failure()
+        if: failure() && steps.initialized.outputs.found == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: test-reports

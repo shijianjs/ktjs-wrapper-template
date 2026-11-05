@@ -350,8 +350,12 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
   **不被 push 触发**：能进默认分支的提交已经在 PR 上跑过同一套构建。`pull_request.branches` 同时列了
   `main` 和 `master`，因为生成的项目两者都有；漏掉实际默认分支会让 CI 静默不跑，连带 Dependabot 的
   自动合并永不触发。需要验证默认分支现状时用 `gh workflow run ci.yml`。
+- 模板仓库自己**跑不了构建**：`__PROJECT__` 占位符会让 npm 拒绝 `__PROJECT__-demo` 这个包名，所以
+  `ci.yml` 第一步检查 `settings.gradle.kts` 里还有没有 `__PROJECT__`，没初始化就跳过后面所有步骤
+  （run 仍然算成功，Dependabot 的自动合并才能走完）。生成的项目里占位符已被替换，照常执行。
 - `.github/workflows/dependabot-auto-merge.yml` 在 CI 成功后自动 squash 合并 Dependabot 的 PR。它用
-  `workflow_run` 而不是直接由 Dependabot PR 触发，因为后者拿到的 `GITHUB_TOKEN` 只读。
+  `workflow_run` 而不是直接由 Dependabot PR 触发，因为后者拿到的 `GITHUB_TOKEN` 只读。下载 CI 产出的
+  `npm-lock` artifact 是 `continue-on-error`：模板仓库没有锁文件可刷，缺这个 artifact 不该卡住合并。
 - `.github/dependabot.yml` 覆盖 `gradle`、`npm`（根目录 `package.json`）和 `github-actions` 三个生态。
   npm 版本由 Dependabot 改 `package.json`，Gradle 自动读取，不再手工改 `npm(...)`。模板仓库自身的
   `package.json` 里 `dependencies` 是空的：留占位符（`__NPM_PACKAGE__` + `__NPM_VERSION__`）会让

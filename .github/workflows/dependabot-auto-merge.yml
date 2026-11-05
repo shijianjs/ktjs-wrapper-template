@@ -47,8 +47,12 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
 
+      # The template repository has no npm lock file to refresh (its CI skips the build until the
+      # project is initialized), so a missing artifact is not an error there.
       - name: Download lock file validated by CI
+        id: lock
         if: steps.pr.outputs.number
+        continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           name: npm-lock
@@ -57,7 +61,7 @@ jobs:
           path: kotlin-js-store
 
       - name: Commit refreshed lock file
-        if: steps.pr.outputs.number
+        if: steps.pr.outputs.number && steps.lock.outcome == 'success'
         env:
           REPO: ${{ github.repository }}
           PR: ${{ steps.pr.outputs.number }}
