@@ -17,7 +17,7 @@ kotlin {
 
     sourceSets {
         jsMain.dependencies {
-            implementation("org.jetbrains.kotlin-wrappers:kotlin-browser:2026.10.4")
+            implementation("org.jetbrains.kotlin-wrappers:kotlin-browser:2026.11.0")
             // scripts/init-wrapper-project.py appends the wrapper modules this demo uses below.
         }
 
