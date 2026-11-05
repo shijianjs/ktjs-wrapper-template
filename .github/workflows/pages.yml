@@ -1,7 +1,7 @@
 name: Deploy demo and API reference
 
 on:
-  # Deploying is a manual decision now: run this after the commits worth publishing are on master.
+  # Deploying is a manual decision now: run this after the commits worth publishing are on main.
   workflow_dispatch:
 
 concurrency:

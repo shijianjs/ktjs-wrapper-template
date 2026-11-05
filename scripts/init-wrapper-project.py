@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import json
 import os
 import re
 import shutil
@@ -133,6 +134,18 @@ def wire(path: Path, marker: str, comment: str, line: str) -> None:
     path.write_text(text.replace(marker, f"{comment}\n{line}", 1), encoding="utf-8", newline="\n")
 
 
+def write_npm_manifest(manifest: Path, package: str, version: str) -> None:
+    """Record the wrapped npm package in the version manifest.
+
+    The template ships an empty `dependencies` block on purpose: Dependabot's npm updater reads this
+    file in the template repository too, and a placeholder package name plus version makes it fail
+    every week with `illformed_requirement`. The first module's upstream version is written here.
+    """
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    data.setdefault("dependencies", {})[package] = version
+    manifest.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+
+
 def main(argv: list[str]) -> int:
     args = parse_args(argv)
     year = str(datetime.date.today().year)
@@ -173,6 +186,7 @@ def main(argv: list[str]) -> int:
         "            // Wrapper modules used by the demo.",
         f'            implementation(project(":{module_project}"))',
     )
+    write_npm_manifest(ROOT / "package.json", args.npm_package, args.npm_version)
 
     # 4. Swap the template README for the generated project README, then drop template-only files.
     scaffold_project = ROOT / "scaffold" / "project"
