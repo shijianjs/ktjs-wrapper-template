@@ -347,12 +347,16 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
 ## CI 与依赖更新
 
 - `.github/workflows/ci.yml` 只在**所有 PR** 和手动触发时运行 `./gradlew build`（JDK 21，Ubuntu），
-  **不被 push 到 master 触发**：能进 `master` 的提交已经在 PR 上跑过同一套构建。需要验证 `master`
-  现状时用 `gh workflow run ci.yml`。
+  **不被 push 触发**：能进默认分支的提交已经在 PR 上跑过同一套构建。`pull_request.branches` 同时列了
+  `main` 和 `master`，因为生成的项目两者都有；漏掉实际默认分支会让 CI 静默不跑，连带 Dependabot 的
+  自动合并永不触发。需要验证默认分支现状时用 `gh workflow run ci.yml`。
 - `.github/workflows/dependabot-auto-merge.yml` 在 CI 成功后自动 squash 合并 Dependabot 的 PR。它用
   `workflow_run` 而不是直接由 Dependabot PR 触发，因为后者拿到的 `GITHUB_TOKEN` 只读。
 - `.github/dependabot.yml` 覆盖 `gradle`、`npm`（根目录 `package.json`）和 `github-actions` 三个生态。
-  npm 版本由 Dependabot 改 `package.json`，Gradle 自动读取，不再手工改 `npm(...)`。
+  npm 版本由 Dependabot 改 `package.json`，Gradle 自动读取，不再手工改 `npm(...)`。模板仓库自身的
+  `package.json` 里 `dependencies` 是空的：留占位符（`__NPM_PACKAGE__` + `__NPM_VERSION__`）会让
+  Dependabot 的 npm 更新任务每周以 `illformed_requirement` 失败，所以第一个上游包由
+  `scripts/init-wrapper-project.py` 写进去。
 - Gradle wrapper 固定在 `9.4.1`，并在 Dependabot 里忽略 `gradle-wrapper`：IntelliJ IDEA 2026.2.3
   同步 Gradle 9.8.x 项目时会报 `ExternalSystemPartialResolutionException`（消息为空），回退到 9.4.1
   即恢复正常。等 IDEA 修复后再删除这条 ignore 并升级。

@@ -48,7 +48,13 @@ tasks.register<Test>("e2eTest") {
     group = "verification"
     description = "Runs the Kotlin/JVM Playwright suite against the bundled demo page."
     useJUnitPlatform()
-    dependsOn("jsBrowserDistribution", ":__PREFIX__-__MODULE__:kotlinInstallPlaywrightBrowsers")
+    dependsOn("jsBrowserDistribution")
+    // The Chromium installed for the Kotlin/JS tests belongs to the wrapper module's JS target. The
+    // template repository ships no wrapper module until scripts/init-wrapper-project.py adds the
+    // first one, so the dependency is only registered when that project is part of the build.
+    if (rootProject.findProject(":__PREFIX__-__MODULE__") != null) {
+        dependsOn(":__PREFIX__-__MODULE__:kotlinInstallPlaywrightBrowsers")
+    }
 
     testClassesDirs = jvmE2eCompilation.output.classesDirs
     classpath = files(jvmE2eCompilation.output.allOutputs, jvmE2eCompilation.runtimeDependencyFiles)

@@ -1,10 +1,12 @@
 name: CI
 
 on:
-  # Pull requests only: a commit that reached master was already verified by the PR run, so a push
-  # to master would just spend the same build again. Run this manually when needed.
+  # Pull requests only: a commit that reached the default branch was already verified by the PR run,
+  # so a push would just spend the same build again. Run this manually when needed.
+  # Both default-branch names are listed because generated projects pick either one; a base branch
+  # that is missing here silently skips CI, which also stops the Dependabot auto-merge from firing.
   pull_request:
-    branches: [master]
+    branches: [main, master]
   workflow_dispatch:
 
 concurrency:
