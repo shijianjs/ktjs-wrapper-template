@@ -39,12 +39,25 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--prefix", required=True, help="Gradle module prefix, e.g. ktjs-vaadin")
     parser.add_argument("--owner", required=True, help="GitHub user or organization")
     parser.add_argument("--repo", help="GitHub repository name; defaults to the prefix")
-    parser.add_argument("--package", required=True, help="Kotlin base package, e.g. vaadin")
+    parser.add_argument(
+        "--package",
+        help="Kotlin base package; defaults to io.github.<owner>.ktjs.<name>, "
+        "e.g. io.github.shijianjs.ktjs.vaadin",
+    )
     parser.add_argument("--module", default="core", help="suffix of the first module; default: core")
     parser.add_argument("--npm-package", required=True, help="wrapped npm package, e.g. @vaadin/grid")
     parser.add_argument("--npm-version", required=True, help="upstream npm version")
     parser.add_argument("--project", help="display name; defaults to --repo")
     args = parser.parse_args(argv)
+
+    # Every ktjs wrapper lives under the account's GitHub Pages domain, so the base package is
+    # `io.github.<owner>.ktjs.<name>`: no bare `vaadin` / `echarts` / `iconify` roots that can
+    # collide with other libraries on the classpath.
+    if not args.package:
+        name = args.prefix[len("ktjs-"):] if args.prefix.startswith("ktjs-") else args.prefix
+        owner_slug = re.sub(r"[^a-z0-9]", "", args.owner.lower())
+        name_slug = re.sub(r"[^a-z0-9]", "", name.lower())
+        args.package = f"io.github.{owner_slug}.ktjs.{name_slug}"
 
     for label, value, pattern in (
         ("--prefix", args.prefix, PREFIX),

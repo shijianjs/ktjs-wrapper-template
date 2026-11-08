@@ -20,6 +20,10 @@
 - `demo`：GitHub Pages 演示站点，不发布、也不进入 Dokka。
 - `scaffold/module`：新增模块时复制的骨架，不参与构建。
 
+Kotlin 包名统一以账号的 GitHub Pages 域名倒写为前缀：`io.github.<owner>.ktjs.<name>`。不要用裸根包
+（`vaadin`、`echarts`、`iconify` 之类），否则项目间以及与其他库容易在同一 classpath 上撞包。新增模块时
+沿用该前缀，再按 npm 包加子包（如 `io.github.shijianjs.ktjs.vaadin.combobox`）。
+
 按「上游发版节奏」而不是「npm 包数量」划分子模块：上游版本号相同、总是一起发版的包放在同一个 Gradle
 模块里，避免每个包都产生一个 Maven 版本和一次 Central 发布。终端应用打包时本来就会摇树，模块内多出的
 声明不会进入最终产物。

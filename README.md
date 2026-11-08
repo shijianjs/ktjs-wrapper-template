@@ -23,7 +23,7 @@ API、示例页面、README 正文）由生成后的项目自己写。
      --prefix ktjs-vaadin \
      --owner shijianjs \
      --repo ktjs-vaadin \
-     --package vaadin \
+     --package io.github.shijianjs.ktjs.vaadin \
      --module core \
      --npm-package @vaadin/web-components \
      --npm-version 25.0.0
@@ -49,7 +49,7 @@ API、示例页面、README 正文）由生成后的项目自己写。
 | `--prefix` | `__PREFIX__` | Gradle 模块前缀，例如 `ktjs-vaadin`；模块名为 `<prefix>-<module>` |
 | `--owner` | `__OWNER__` | GitHub 用户/组织；group 为 `io.github.<owner>` |
 | `--repo` | `__REPO__` | 仓库名，默认与 `--prefix` 相同 |
-| `--package` | `__PACKAGE__` | Kotlin 包名，例如 `vaadin`；源码目录会同步重命名 |
+| `--package` | `__PACKAGE__` | Kotlin 基础包名，例如 `io.github.shijianjs.ktjs.vaadin`；源码目录会同步重命名。留空则按 `io.github.<owner>.ktjs.<name>` 推导 |
 | `--module` | `__MODULE__` | 第一个模块的后缀，例如 `core` |
 | `--npm-package` | `__NPM_PACKAGE__` | 被包装的 npm 包名（scoped 包写全名） |
 | `--npm-version` | `__NPM_VERSION__` | 上游 npm 版本，作为 `{版本}-kt.1` 的基础 |
@@ -58,6 +58,9 @@ API、示例页面、README 正文）由生成后的项目自己写。
 
 `__MODULE__` 只用于 Gradle 模块名（`<prefix>-<module>`）与 `wrapper-revisions.properties` 的条目；
 Kotlin 包名完全由 `--package` 决定，新增模块时自行选择子包并替换 `scaffold/module` 里的占位符。
+
+所有 ktjs wrapper 的包名统一以账号的 GitHub Pages 域名倒写为前缀：`io.github.<owner>.ktjs.<name>`。
+不要用 `vaadin`、`echarts`、`iconify` 这类裸根包，避免与其他库在同一 classpath 上冲突。
 
 ## 脚本做了什么
 
