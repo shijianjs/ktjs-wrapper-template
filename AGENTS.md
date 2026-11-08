@@ -83,15 +83,22 @@ wrapper 的目标是让上游 npm 包暴露的公开 API 在 Kotlin/JS 侧都能
 
 ### 类型安全封装指南
 
-上游类型到 Kotlin 类型的完整对照与写法整理在同目录的 [TYPE-MAPPING.md](TYPE-MAPPING.md)：联合类型的
-同名工厂模式、字符串字面量的 `sealed external interface` + 常量对象、`web.cssom` / `web.canvas` 值类型、
-`js.objects.unsafeJso`、上游 mixin 与 Kotlin 公共基接口的取舍、`JsAny` / `dynamic` 的边界、上游
-`Omit<...> & { ... }` / `data` 收窄 / 元组 / `T | "none"` 这些 Kotlin 表达不了的写法的固定处理方式、包与
-文件划分、落地检查清单和反模式速查。新增或修改 wrapper 声明前先读它。该文档保持通用措辞，与派生项目
-同步维护。
+上游类型到 Kotlin 类型的完整对照与写法整理在技能 `ktjs-type-mapping`，本仓库已安装到
+[`.agents/skills/ktjs-type-mapping/`](.agents/skills/ktjs-type-mapping/SKILL.md)（入口 `SKILL.md`，
+完整规范在其 `references/type-mapping.md`）：联合类型的同名工厂模式、字符串字面量的
+`sealed external interface` + 常量对象、`web.cssom` / `web.canvas` 值类型、`js.objects.unsafeJso`、
+上游 mixin 与 Kotlin 公共基接口的取舍、`JsAny` / `dynamic` 的边界、上游 `Omit<...> & { ... }` /
+`data` 收窄 / 元组 / `T | "none"` 这些 Kotlin 表达不了的写法的固定处理方式、包与文件划分、落地检查
+清单和反模式速查。新增或修改 wrapper 声明前先读它。
+
+该技能由 [`shijianjs/dev-agent-skills`](https://github.com/shijianjs/dev-agent-skills) 统一维护，
+所有 `ktjs-*` 仓库共用同一份。**不要在本仓库新建或手改副本**：要改内容就改 skill 仓库，再在本仓库执行
+`npx skills update ktjs-type-mapping` 让副本与 `skills-lock.json` 同步；本机没有该技能时先执行
+`npx skills add shijianjs/dev-agent-skills --skill ktjs-type-mapping`。由本模板派生的新项目同样安装它，
+不要再各自复制一份正文。
 
 `dynamic` 只留给「上游自己也没写类型、实现也无法推断」的情况；上游写了 `any` / `unknown` 才用 `JsAny`，
-且要在 KDoc 里注明「上游类型是 `unknown`」。退化到这两者之前，先按 TYPE-MAPPING 第 12 节过一遍。
+且要在 KDoc 里注明「上游类型是 `unknown`」。退化到这两者之前，先按 `ktjs-type-mapping` 技能第 12 节过一遍。
 
 ### 新增模块
 

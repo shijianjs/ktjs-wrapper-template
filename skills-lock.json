@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "ktjs-type-mapping": {
+      "source": "shijianjs/dev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ktjs-type-mapping/SKILL.md",
+      "computedHash": "5ebcd2e4a9b964b73d79742efc512b39c91787fcb4dbe147595f5c6c764c9577"
+    }
+  }
+}

@@ -21,7 +21,7 @@ const val UPSTREAM_PACKAGE: String = "__NPM_PACKAGE__"
  * }
  * ```
  *
- * Map the upstream `.d.ts` types as described in `TYPE-MAPPING.md`; never fall back to `dynamic`.
+ * Map the upstream `.d.ts` types as described in the `ktjs-type-mapping` skill; never fall back to `dynamic`.
  *
  * ESM note: an `external object` with named members compiles to named imports. A top-level
  * `external val` with `@JsName` compiles to a default import, which fails for packages that only
