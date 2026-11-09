@@ -313,6 +313,17 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
   出现 hydration 报错指向自定义元素，说明有代码把节点挂回了 light DOM，修原因而不是用
   `suppressHydrationWarning` 掩盖。
 
+## 库产物的 DCE
+
+Kotlin/JS 的 library 链接默认开 IR DCE，入口只有该模块自己的 `@JsExport`。wrapper 模块通常一个都没有，
+于是 `.mjs` 会被削成一百多字节，消费方按文件 import 时拿到 `undefined`（`... is not a function`、
+`Cannot read properties of undefined`）。
+
+所以在 JS target 上统一加 `freeCompilerArgs.add("-Xir-dce=false")`：库不能假设自己一定被打进最终
+bundle，而消费方打包时本来就会摇树，保留 public API 没有额外风险。
+
+判断信号：`build/compileSync/js/main/productionLibrary/kotlin/<模块>.mjs` 只有一百多字节，而源码里有
+非 external 的实现代码。注意 executable 消费方不受影响——依赖 klib 的代码会被打进它的单文件 bundle。
 ## 版本约定
 
 每个子模块独立版本，格式为 `{上游 npm 版本}-kt.{修订号}`。上游 npm 版本只在根目录 `package.json` 的
