@@ -18,6 +18,12 @@ kotlin {
     js {
         useEsModules()
 
+        compilerOptions {
+            // ES2015 is the first target whose output can express a real class, which custom
+            // elements need. Kotlin/JS accepts es5/es2015 only (es2020 fails).
+            target = "es2015"
+        }
+
         // Browser test runtime. Swap to `nodejs()` (and jsNodeTest) for a Node-only package.
         browser {
             @OptIn(ExperimentalJsTestDsl::class)
