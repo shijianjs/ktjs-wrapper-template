@@ -116,7 +116,10 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
-        run: ./gradlew ${{ steps.plan.outputs.tasks }} --stacktrace -Pktjs.release=true
+        # The stored lock describes a working tree, whose module versions carry `-SNAPSHOT`; this
+        # invocation derives them without the suffix, so the generated npm packages differ by that
+        # string alone and the comparison cannot pass. CI verifies the committed lock on every PR.
+        run: ./gradlew ${{ steps.plan.outputs.tasks }} --stacktrace -Pktjs.release=true -x kotlinStorePackageLock
 
       - name: Package the archives and registrations
         env:

@@ -1,9 +1,9 @@
 pluginManagement {
     repositories {
-        // The docs site is built with the ktjs-docusaurus Gradle plugin. Everything released comes
-        // from the Plugin Portal / Central; `mavenLocal` is what serves a SNAPSHOT version of that
-        // plugin, which is how the site is developed against an unreleased wrapper. An empty local
-        // repository simply falls through to the next repository.
+        // The docs site is built with the ktjs-docusaurus Gradle plugin. Released versions come from
+        // Central; `mavenLocal` is what serves a SNAPSHOT one, which is how the site is developed
+        // against an unreleased wrapper. An empty local repository falls through to the next
+        // repository, so the order costs nothing in CI.
         mavenLocal()
         gradlePluginPortal()
         mavenCentral()
