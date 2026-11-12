@@ -9,7 +9,8 @@ else's workflow run.
 
 A Kotlin Multiplatform module is not one coordinate: the `kotlinMultiplatform` publication is
 `<module>` and the JS publication is `<module>-js`, so each module here yields two archives and two
-registrations.
+registrations. A Gradle plugin build yields one more: its marker publication, whose group is the
+plugin id.
 
 Only the Python standard library is used, so this runs on any `ubuntu-latest` CI image and locally.
 """
@@ -27,7 +28,12 @@ import urllib.parse
 from dataclasses import dataclass, field
 from pathlib import Path
 
-GROUP_PATH = "io/github/__OWNER__"
+GROUP = "io.github.__OWNER__"
+GROUP_PATH = GROUP.replace(".", "/")
+# A Gradle plugin has two coordinates: the jar under GROUP, and a marker publication whose group is
+# the plugin id itself, i.e. `<id>:<id>.gradle.plugin:<version>`. The marker is what makes
+# `plugins { id("...") }` resolvable, and its group nests under GROUP rather than sitting beside it.
+PLUGIN_MARKER_SUFFIX = ".gradle.plugin"
 # Gradle writes these next to every artifact. Maven Central does not need them and the hub drops
 # them because they only consume the monthly File Count quota.
 CHECKSUM_SUFFIXES = (".md5", ".sha1", ".sha256", ".sha512")
@@ -46,12 +52,14 @@ class Coordinate:
     version: str
     artifact: str
     directory: Path
+    # Plugin markers live under the plugin id; every other coordinate is in GROUP.
+    group: str = GROUP
     # File names inside the coordinate directory, which Maven publishes flat.
     files: list[str] = field(default_factory=list)
 
     @property
     def coordinate(self) -> str:
-        return f"io.github.__OWNER__:{self.artifact}:{self.version}"
+        return f"{self.group}:{self.artifact}:{self.version}"
 
     @property
     def archive_name(self) -> str:
@@ -59,7 +67,7 @@ class Coordinate:
 
     @property
     def repository_path(self) -> str:
-        return f"{GROUP_PATH}/{self.artifact}/{self.version}"
+        return f"{self.group.replace('.', '/')}/{self.artifact}/{self.version}"
 
 
 def sha256_file(path: Path) -> str:
@@ -90,34 +98,54 @@ def central_files(directory: Path) -> list[str]:
 
 
 def discover(staging: Path, module: str, version: str) -> list[Coordinate]:
-    root = staging / module / "build" / "hub-staging" / GROUP_PATH
-    if not root.is_dir():
+    build = staging / module / "build" / "hub-staging"
+    if not build.is_dir():
         raise ReleaseError(
-            f"{root}: missing; run ./gradlew :{module}:publishAllPublicationsToHubStagingRepository first"
+            f"{build}: missing; run ./gradlew :{module}:publishAllPublicationsToHubStagingRepository first"
         )
 
     coordinates = []
-    for artifact_dir in sorted(p for p in root.iterdir() if p.is_dir()):
+    root = build / GROUP_PATH
+    artifact_dirs = sorted(p for p in root.iterdir() if p.is_dir()) if root.is_dir() else []
+    for artifact_dir in artifact_dirs:
         version_dir = artifact_dir / version
         if not version_dir.is_dir():
             continue
         # The module's own coordinate is `<module>`; KMP target coordinates are `<module>-<target>`.
         if not artifact_dir.name.startswith(module):
             raise ReleaseError(f"{version_dir}: unexpected artifact id {artifact_dir.name!r}")
-        coordinate = Coordinate(
-            module=module,
-            version=version,
-            artifact=artifact_dir.name,
-            directory=version_dir,
+        coordinates.append(
+            collect(module, version, artifact_dir.name, version_dir, GROUP)
         )
-        coordinate.files = central_files(version_dir)
-        if not coordinate.files:
-            raise ReleaseError(f"{version_dir}: no artifacts after filtering checksum files")
-        coordinates.append(coordinate)
+
+    # A Gradle plugin build also publishes a marker under the plugin id, which nests below GROUP_PATH
+    # instead of sitting beside it: <id path>/<id>.gradle.plugin/<version>.
+    for marker_dir in sorted(p for p in build.rglob(f"*{PLUGIN_MARKER_SUFFIX}") if p.is_dir()):
+        version_dir = marker_dir / version
+        if not version_dir.is_dir():
+            continue
+        parts = version_dir.parent.parent.relative_to(build).parts
+        coordinates.append(
+            collect(module, version, marker_dir.name, version_dir, ".".join(parts))
+        )
 
     if not coordinates:
-        raise ReleaseError(f"{root}: no {module} coordinate found for version {version}")
+        raise ReleaseError(f"{build}: no {module} coordinate found for version {version}")
     return coordinates
+
+
+def collect(module: str, version: str, artifact: str, directory: Path, group: str) -> Coordinate:
+    coordinate = Coordinate(
+        module=module,
+        version=version,
+        artifact=artifact,
+        directory=directory,
+        group=group,
+    )
+    coordinate.files = central_files(directory)
+    if not coordinate.files:
+        raise ReleaseError(f"{directory}: no artifacts after filtering checksum files")
+    return coordinate
 
 
 def validate(coordinate: Coordinate) -> None:
