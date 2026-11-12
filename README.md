@@ -35,12 +35,13 @@ API、示例页面、README 正文）由生成后的项目自己写。
    ./gradlew kotlinNpmInstall
    ./gradlew kotlinUpgradePackageLock
    ./gradlew build
+   ./gradlew :docs:docusaurusBuild
    ./gradlew pagesSite
    ./gradlew :demo:e2eTest
    ```
 
-4. 按新项目重写 `demo`、各模块 README、根 README 模块表与 `AGENTS.md` 里的项目描述，然后提交。
-   初始化脚本会删除自己，重复运行会被拒绝。
+4. 按新项目重写 `demo`、`docs` 页面、各模块 README、根 README 模块表与 `AGENTS.md` 里的项目描述，
+   然后提交。初始化脚本会删除自己，重复运行会被拒绝。
 
 ## 参数与占位符
 
@@ -65,7 +66,8 @@ Kotlin 包名完全由 `--package` 决定，新增模块时自行选择子包并
 ## 脚本做了什么
 
 - 遍历仓库文本文件替换占位符（跳过 `.git`、`build`、`node_modules` 与脚本自身）；
-- 把 `scaffold/module` 复制为 `<prefix>-<module>`，并重命名 `src/**/kotlin/<package>` 目录；
+- 把 `scaffold/module` 复制为 `<prefix>-<module>`，并重命名 `src/**/kotlin/<package>` 目录（`docs`
+  模块的 Kotlin 包目录一起重命名）；
 - 在 `settings.gradle.kts` 追加 `include(":<prefix>-<module>")`；
 - 在 `demo/build.gradle.kts` 追加该模块的 `implementation(project(...))`；
 - 用 `scaffold/project/README*.md` 生成项目 README，然后删除模板说明与初始化脚本；
@@ -96,6 +98,7 @@ Kotlin 包名完全由 `--package` 决定，新增模块时自行选择子包并
 │   ├── module/                   # 模块骨架，新增模块时复制
 │   └── project/                  # 生成后的项目 README
 ├── demo/                         # Pages 演示页 + Kotlin/JVM Playwright e2e
+├── docs/                         # 文档站：Kotlin 配置 + Markdown，由 ktjs-docusaurus 构建
 └── .github/workflows/            # CI、Pages、Release、Dependabot auto-merge
 ```
 
