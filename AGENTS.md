@@ -140,6 +140,18 @@ Gradle 9 / JDK 25。升级时注意 2.0 的插件 ID 是 `dev.detekt`，规则�
 - `@JsModule` 声明必须按 ESM 语义书写：`@file:JsModule` 的顶层函数/类会生成具名导入，安全；但顶层
   `external val` 配 `@JsName` 会生成 default import，对只有具名导出的包必须写成 `@JsModule` +
   `external object` + 具名属性。
+- **可调用的模块导出（导出的是函数对象，属性挂在同一个函数上，如 `loadjs`）分两半写**：把 `operator fun
+  invoke` 声明在 `external interface` 上**不会**编译成调用——Kotlin/JS 生成的是 `obj.invoke(...)`
+  属性查找，运行时 `TypeError: ….invoke is not a function`（2026-11 在 Kotlin 2.4.21 + es2015 上实测）。
+  正确写法：成员留在接口上（`@JsName("default") external val loadjs: Loadjs`），调用声明成
+  `internal external fun`（同样 `@JsName("default")`；参数用 `Any?` 配 `definedExternally` 默认值原样
+  透传，省略的参数才会是 `undefined` 而不是 `null`），对外的可调用性由**扩展** `operator fun
+  Loadjs.invoke(...)` 提供，调用点照旧写 `loadjs(...)`。接口上不要再留 `invoke` 成员：成员优先于扩展，
+  会又退回属性查找。
+- 同一个 `@JsName("default")` 只保留**一份**声明：声明两份时编译器只给其中一份混淆后的别名
+  （`default_0`），另一份引用成裸 `default`（保留字），webpack 直接报
+  `Module parse failed: Unexpected token`。函数对象那种「成员 + 调用」的拆分正好落在两份声明里，所以调用
+  声明要一份吃下所有形态，靠参数类型（`Any?`）透传。
 - ESM-only 的 Node 包（`exports` 里没有 `require`/`default` 条件）要导入具体子路径，例如
   `@scope/package/lib/index.js`，不要写包名；子路径对 CommonJS 与 ESM 链接都可用。
 - 浏览器测试使用新版测试 DSL：`@OptIn(ExperimentalJsTestDsl::class) browser { test { chromium() } }`，
