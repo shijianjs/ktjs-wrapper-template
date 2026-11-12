@@ -1,0 +1,9 @@
+/* Site-wide overrides. Docusaurus injects the theme's own CSS before this file. */
+:root {
+    --ifm-color-primary: #1f6feb;
+    --ifm-code-font-size: 95%;
+}
+
+[data-theme='dark'] {
+    --ifm-color-primary: #6cb6ff;
+}

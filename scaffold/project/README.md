@@ -5,6 +5,7 @@ Kotlin/JS wrappers for the [`__NPM_PACKAGE__`](https://www.npmjs.com/package/__N
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 **[Live demo](https://__OWNER__.github.io/__REPO__/)** ·
+**[Documentation](https://__OWNER__.github.io/__REPO__/docs/)** ·
 **[API reference](https://__OWNER__.github.io/__REPO__/api/)**
 
 The repository keeps one `__PREFIX__-*` Gradle module per npm package, or per group of packages
@@ -26,6 +27,9 @@ declared once in the root [`package.json`](package.json); the revision is read p
 the `npm(...)` dependency from these two files:
 
 - Only `-kt.N` versions are published; a version without the suffix never exists.
+- A working tree always adds `-SNAPSHOT`: the derived number is the *next* release, which Central does
+  not have yet, so development builds never impersonate it. Publishing passes `-Pktjs.release=true`,
+  which drops the suffix.
 - Upstream upgrade: change the version in `package.json`; the base version follows automatically
   while the revision stays, even when the wrapper code itself did not change.
 - Wrapper-only fix: the revision increments (`kt.2`, `kt.3`, ...) while the base version stays.
@@ -51,9 +55,19 @@ the `npm(...)` dependency from these two files:
 # End-to-end checks for the bundled demo page (Playwright, needs node on PATH)
 ./gradlew :demo:e2eTest
 
-# GitHub Pages site (demo at the root, Dokka output under /api/)
+# Documentation site: Kotlin configuration, Markdown pages, built by ktjs-docusaurus
+./gradlew :docs:docusaurusBuild
+
+# GitHub Pages site (demo at the root, documentation under /docs/, Dokka output under /api/)
 ./gradlew pagesSite
 ```
+
+The `docs` module is a Kotlin/JS project too, and it is built with the
+[ktjs-docusaurus](https://github.com/shijianjs/ktjs-docusaurus) Gradle plugin. Both its versions live
+in `gradle.properties` — `ktjs-docusaurus.version` for the wrapper klib and
+`ktjs-docusaurus-gradle-plugin.version` for the plugin, because each module of that project carries
+its own `-kt.N` revision. A SNAPSHOT there is resolved from `mavenLocal`, so building the site against
+an unreleased wrapper means publishing that wrapper locally first.
 
 After adding or upgrading an npm dependency in a module, refresh the shared lock file:
 

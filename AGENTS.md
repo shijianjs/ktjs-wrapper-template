@@ -18,6 +18,12 @@
 
 - `__PREFIX__-__MODULE__`：发布模块，`version = {上游 npm 版本}-kt.{修订号}`。
 - `demo`：GitHub Pages 演示站点，不发布、也不进入 Dokka。
+- `docs`：文档站。也是 Kotlin/JS 模块——站点配置与侧边栏是 Kotlin、页面是 Markdown，由
+  [ktjs-docusaurus](https://github.com/shijianjs/ktjs-docusaurus) 的 Gradle 插件组装并调用
+  Docusaurus CLI；`pagesSite` 把它放到 Pages 的 `/docs/`，所以它的 `baseUrl` 必须与那个目录一致。
+  不发布、也不进 Dokka。版本在 `gradle.properties`：`ktjs-docusaurus.version` 是 wrapper klib 的，
+  `ktjs-docusaurus-gradle-plugin.version` 是插件的（那个项目每个模块各有 `-kt.N` 修订号）；写 SNAPSHOT
+  时从 `mavenLocal` 解析，也就是先在那两个构建里各跑一次 `publishToMavenLocal`。
 - `scaffold/module`：新增模块时复制的骨架，不参与构建。
 
 Kotlin 包名统一以账号的 GitHub Pages 域名倒写为前缀：`io.github.<owner>.ktjs.<name>`。不要用裸根包
@@ -344,6 +350,9 @@ bundle，而消费方打包时本来就会摇树，保留 public API 没有额�
 各子模块读取后声明 `npm(...)` 并推导版本。禁止在模块脚本里硬编码 npm 版本或 `kt.N`。
 
 - 只发布带 `-kt.N` 后缀的版本，不存在不带后缀的版本。
+- **工作树里的版本一律再带 `-SNAPSHOT`**：推导出的 `X-kt.N` 是「下一个要发的版本」，Central 上还没有，
+  所以开发构建不冒用这个名字（本地发布也不会遮蔽真实版本，消费方能一眼分辨）。`-Pktjs.release=true`
+  去掉后缀，`release.yml` 的两处 Gradle 调用都带着它；本地要发真版本时自己加。
 - 每个模块的修订号独立递增，永不重置为 `kt.1`。它表示该模块的第 N 次 wrapper 发布，与上游 npm 版本
   各自独立演进。
 - wrapper 代码或该模块的已发布元数据变化时，只把 `wrapper-revisions.properties` 中对应模块的修订号加一；
@@ -499,8 +508,8 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
   Chromium 复用第一个 wrapper 模块的 `kotlinInstallPlaywrightBrowsers`，因此
   `com.microsoft.playwright:playwright` 的版本必须与 KGP 安装的 npm `playwright` 一致（当前都是
   1.61.0），升级 KGP 后若浏览器版本不匹配，重新跑安装任务。
-- `./gradlew pagesSite` 把 demo 与 `build/dokka/html` 组装到 `build/pages`：演示页在根目录，API 文档在
-  `api/`。演示页内部链接使用相对路径。
+- `./gradlew pagesSite` 把 demo、文档站与 `build/dokka/html` 组装到 `build/pages`：演示页在根目录，
+  文档站在 `docs/`，API 文档在 `api/`。演示页内部链接使用相对路径。
 - Dokka 2.2.0 同时应用到根项目和所有 wrapper 子模块；聚合入口是根项目的 `dependencies { dokka(...) }`，
   任务为 `dokkaGeneratePublicationHtml`（2.x 已移除旧的 `dokkaHtmlMultiModule`）。
 - `.github/workflows/pages.yml` 只有 `workflow_dispatch`：站点更新在内容值得上线后手动执行

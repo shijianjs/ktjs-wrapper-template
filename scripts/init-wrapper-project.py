@@ -185,6 +185,10 @@ def main(argv: list[str]) -> int:
     replace_tree(module_root, values, skip_scaffold=False)
     relocate_package(module_root, args.package)
 
+    # The docs module declares the same base package (`<package>.docs`), so its Kotlin directory
+    # moves with the rest.
+    relocate_package(ROOT / "docs", args.package)
+
     # 3. Wire the module into the build, the version table, the demo and the npm manifest.
     wire(
         ROOT / "settings.gradle.kts",
@@ -218,6 +222,7 @@ def main(argv: list[str]) -> int:
     print("  ./gradlew kotlinNpmInstall")
     print("  ./gradlew kotlinUpgradePackageLock")
     print("  ./gradlew build")
+    print("  ./gradlew :docs:docusaurusBuild")
     print("  ./gradlew pagesSite")
     print("  ./gradlew :demo:e2eTest")
     print()

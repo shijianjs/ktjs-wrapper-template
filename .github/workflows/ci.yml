@@ -65,7 +65,8 @@ jobs:
         if: steps.initialized.outputs.found == 'true'
         run: ./gradlew build --stacktrace
 
-      # Validates the demo bundle and the Dokka reference that the Pages workflow deploys.
+      # Validates the demo bundle, the docs site and the Dokka reference that the Pages workflow
+      # deploys.
       - name: Assemble Pages site
         if: steps.initialized.outputs.found == 'true'
         run: ./gradlew pagesSite

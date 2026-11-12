@@ -6,7 +6,7 @@ name: Release
 # (__OWNER__/maven-central-publishing). The hub merges every pending registration into a single
 # Central deployment, so several modules released together still cost one Release Count.
 #
-# `verify` runs the hub's own `jreleaser deploy --dry-run`. It exercises the complete hand-off â€?# download, sha256, archive layout, signatures, repo1 pruning and bundle creation â€?without
+# `verify` runs the hub's own `jreleaser deploy --dry-run`. It exercises the complete hand-off éˆ¥?# download, sha256, archive layout, signatures, repo1 pruning and bundle creation éˆ¥?without
 # uploading anything.
 
 on:
@@ -82,7 +82,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build
-          ./gradlew -q printPublishedVersions | tee build/published-versions.txt
+          ./gradlew -q printPublishedVersions -Pktjs.release=true | tee build/published-versions.txt
           python3 - "$INPUT_MODULES" build/published-versions.txt build/release-modules.txt <<'PY'
           import sys
 
@@ -116,7 +116,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
-        run: ./gradlew ${{ steps.plan.outputs.tasks }} --stacktrace
+        run: ./gradlew ${{ steps.plan.outputs.tasks }} --stacktrace -Pktjs.release=true
 
       - name: Package the archives and registrations
         env:

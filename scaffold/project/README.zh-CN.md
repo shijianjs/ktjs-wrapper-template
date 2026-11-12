@@ -5,6 +5,7 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 **[在线演示](https://__OWNER__.github.io/__REPO__/)** ·
+**[文档](https://__OWNER__.github.io/__REPO__/docs/)** ·
 **[API 文档](https://__OWNER__.github.io/__REPO__/api/)**
 
 仓库按 npm 包（或一组共享上游版本与发版节奏的包）划分 `__PREFIX__-*` Gradle 模块。终端应用打包时
@@ -23,6 +24,8 @@
 Gradle 从这两份文件推导基础版本和 `npm(...)` 依赖：
 
 - 只发布带 `-kt.N` 后缀的版本，不存在不带后缀的版本。
+- 工作树里的版本一律再带 `-SNAPSHOT`：推导出的是「下一个要发的版本」，Central 上还没有，开发构建不冒用它。
+  发布时才用 `-Pktjs.release=true` 去掉后缀。
 - 上游升级：改 `package.json` 里的版本，基础版本自动跟随，修订号保持不变。
 - 仅 wrapper 修复：只把对应模块的修订号加一（`kt.2`、`kt.3`……）。
 - 修订号按模块维护，只增不减，永不重置为 `kt.1`。发布时只发修订号变化的模块。
@@ -45,9 +48,17 @@ Gradle 从这两份文件推导基础版本和 `npm(...)` 依赖：
 # demo 打包页面的端到端检查（Playwright，需要 PATH 上有 node）
 ./gradlew :demo:e2eTest
 
-# GitHub Pages 站点（根目录是 demo，API 文档在 /api/）
+# 文档站：Kotlin 配置 + Markdown 页面，由 ktjs-docusaurus 构建
+./gradlew :docs:docusaurusBuild
+
+# GitHub Pages 站点（根目录是 demo，文档在 /docs/，API 文档在 /api/）
 ./gradlew pagesSite
 ```
+
+`docs` 模块同样是 Kotlin/JS 项目，用 [ktjs-docusaurus](https://github.com/shijianjs/ktjs-docusaurus)
+的 Gradle 插件构建。它的两个版本都写在 `gradle.properties` 里：`ktjs-docusaurus.version` 是 wrapper
+klib 的版本，`ktjs-docusaurus-gradle-plugin.version` 是插件的版本——那个项目的每个模块各自带 `-kt.N`
+修订号。写 SNAPSHOT 时从 `mavenLocal` 解析，也就是先本地发布一份尚未发版的 wrapper 再构建站点。
 
 新增或升级模块的 npm 依赖后，刷新共享锁文件：
 

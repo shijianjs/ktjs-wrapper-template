@@ -13,6 +13,15 @@ plugins {
     id("org.jetbrains.dokka") version "2.3.0"
 }
 
+// A working tree is never a release. Every module derives the version of its *next* release, which
+// Maven Central does not have, so the suffix marks it as unreleased: consumers can tell an artifact
+// built here from one that was published, and a local publish can never shadow a real version.
+// The release workflow passes `-Pktjs.release=true`, which drops the suffix for both the build and
+// `printPublishedVersions`. Nothing else reads the flag.
+val versionSuffix =
+    if (providers.gradleProperty("ktjs.release").map(String::toBoolean).getOrElse(false)) "" else "-SNAPSHOT"
+extra["versionSuffix"] = versionSuffix
+
 // Every publishable module shares the prefix, which is also how publishing, Dokka and the version
 // report find them. Keep it in sync with the module directories and settings.gradle.kts.
 val publishedPrefix = "__PREFIX__-"
@@ -183,11 +192,16 @@ tasks.register("printPublishedVersions") {
     }
 }
 
-// Assembles the GitHub Pages site: the demo at the root and the API reference under /api/.
+// Assembles the GitHub Pages site: the demo at the root, the documentation under /docs/ and the API
+// reference under /api/. The docs site's `baseUrl` (in its Config.kt) has to mirror the directory it
+// is copied into here.
 tasks.register<Sync>("pagesSite") {
-    dependsOn(":demo:jsBrowserDistribution", "dokkaGeneratePublicationHtml")
+    dependsOn(":demo:jsBrowserDistribution", ":docs:docusaurusBuild", "dokkaGeneratePublicationHtml")
     into(layout.buildDirectory.dir("pages"))
     from(project(":demo").layout.buildDirectory.dir("dist/js/productionExecutable"))
+    from(layout.buildDirectory.dir("js/docusaurus/docs/build")) {
+        into("docs")
+    }
     from(layout.buildDirectory.dir("dokka/html")) {
         into("api")
     }

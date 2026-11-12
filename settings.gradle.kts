@@ -1,12 +1,29 @@
 pluginManagement {
     repositories {
+        // The docs site is built with the ktjs-docusaurus Gradle plugin. Everything released comes
+        // from the Plugin Portal / Central; `mavenLocal` is what serves a SNAPSHOT version of that
+        // plugin, which is how the site is developed against an unreleased wrapper. An empty local
+        // repository simply falls through to the next repository.
+        mavenLocal()
         gradlePluginPortal()
         mavenCentral()
+    }
+
+    // The plugin's version lives in gradle.properties next to the wrapper's: both come from
+    // ktjs-docusaurus, but each of its modules carries its own `-kt.N` revision.
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == "io.github.shijianjs.ktjs.docusaurus") {
+                useVersion(providers.gradleProperty("ktjs-docusaurus-gradle-plugin.version").get())
+            }
+        }
     }
 }
 
 dependencyResolutionManagement {
     repositories {
+        // Same reasoning as above: the wrapper klib of a SNAPSHOT version comes from `mavenLocal`.
+        mavenLocal()
         // Maven Central is the source of truth for kotlin-wrappers: the Aliyun mirror lags behind
         // and sometimes serves metadata without the corresponding klibs. Gradle does not fall back
         // to the next repository once metadata is found, so pin these modules to Central even when
@@ -26,6 +43,10 @@ rootProject.name = "__PROJECT__"
 
 // The demo is the GitHub Pages site, not a published module.
 include(":demo")
+
+// The documentation site: Kotlin configuration plus Markdown, assembled by the ktjs-docusaurus
+// Gradle plugin into a static site that `pagesSite` publishes under `/docs/`.
+include(":docs")
 
 // scripts/init-wrapper-project.py appends one include per wrapper module below. The template ships
 // none on purpose: replace the placeholders and run the script before the first build.
