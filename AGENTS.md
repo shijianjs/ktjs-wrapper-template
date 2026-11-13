@@ -11,6 +11,9 @@
   国内网络访问这些域名经常超时。
 - 本地还没有需要的仓库时，按 `gh repo clone <owner>/<repo> <workspace>/<owner>/<repo>` 克隆后再读，
   不要逐个抓网页。
+- 查上游 API 的语义信息（某个类型的父类型链、谁实现了某个接口、某个方法覆盖了谁）优先走 IDE 的 MCP
+  server，而不是只 grep 源码目录：两个 server 的分工、`scope: project_and_libraries` 之类的坑与现成脚本见
+  [`.agents/skills/intellij-mcp-plugins/`](.agents/skills/intellij-mcp-plugins/SKILL.md)。
 
 ## 项目概况与模块结构
 
@@ -211,6 +214,9 @@ Gradle 9 / JDK 25。升级时注意 2.0 的插件 ID 是 `dev.detekt`，规则�
 ## UI 编程约定
 
 以下为维护者的通用 UI 编码偏好。新增任何 UI 代码（Web Component 包装、演示页）都按此执行。
+规范正文以 [`.agents/skills/ui-code-style/`](.agents/skills/ui-code-style/SKILL.md) 为准（由
+[`shijianjs/dev-agent-skills`](https://github.com/shijianjs/dev-agent-skills) 分发），本节是它的摘要加本类
+项目的落地方式。
 
 ### 保留模式：对原生 DOM 做面向对象封装
 

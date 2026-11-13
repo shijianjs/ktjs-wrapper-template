@@ -1,23 +1,29 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "kotlin-multiplatform-libraries-expert": {
       "source": "JetBrains/klibs-io",
       "sourceType": "github",
       "skillPath": "skills/kmp-libraries-expert/SKILL.md",
-      "computedHash": "d7e922bf42a73eecdc08d3a4688a2ca7f78e5fc9df2ac2cb1dd10a03265549c3"
+      "computedHash": "e9b6681343399f55e959732f5a9f46551b4dc7b7891511814378c7728c710298"
     },
     "ktjs-type-mapping": {
       "source": "shijianjs/dev-agent-skills",
       "sourceType": "github",
       "skillPath": "skills/ktjs-type-mapping/SKILL.md",
-      "computedHash": "5ebcd2e4a9b964b73d79742efc512b39c91787fcb4dbe147595f5c6c764c9577"
+      "computedHash": "ee1a9e5cd93e0fe08083ea5f657bc71e0d45c585612ed265c2167b24e8e59c55"
     },
     "long-task-tracking": {
       "source": "shijianjs/dev-agent-skills",
       "sourceType": "github",
       "skillPath": "skills/long-task-tracking/SKILL.md",
-      "computedHash": "538313c44cbead9bd5cebe12aaf0016324f632e5ae81abfd3e8a0bedb1026cb8"
+      "computedHash": "42e36ce45f84b1f5288377153b745145f04bdf07d412d59f41c81cdddd75d7ac"
+    },
+    "ui-code-style": {
+      "source": "shijianjs/dev-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/ui-code-style/SKILL.md",
+      "computedHash": "93355f0e8dcc498bbb8da7826748daf63f20105c590b048ab3441e9571fad89d"
     }
   }
 }
