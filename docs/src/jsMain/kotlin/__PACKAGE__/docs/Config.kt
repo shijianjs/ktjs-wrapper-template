@@ -34,11 +34,23 @@ import kotlin.js.unsafeCast
 
 private const val REPOSITORY = "https://github.com/__OWNER__/__REPO__"
 
+private const val SITE_URL = "https://__OWNER__.github.io"
+
 /**
- * Where the site is served from. `pagesSite` copies this build under `/docs/` of the Pages site, so
- * the base URL carries both the repository name and that directory.
+ * Where the site is served from: the GitHub Pages root. `pagesSite` puts the documentation here, the
+ * demo under `/demo/` and the API reference under `/api/`.
  */
-private const val SITE_BASE_URL = "/__REPO__/docs/"
+private const val SITE_BASE_URL = "/__REPO__/"
+
+/**
+ * The two artifacts that sit next to the documentation on the same Pages deployment.
+ *
+ * Full URLs rather than paths: neither is a route of this Docusaurus build, and Docusaurus reports an
+ * absolute internal path (`/__REPO__/demo/`) as a broken link. A full URL is treated as external, and
+ * it also survives the locale prefixes, where a relative link would resolve to nothing.
+ */
+private const val DEMO_URL = "$SITE_URL$SITE_BASE_URL" + "demo/"
+private const val API_URL = "$SITE_URL$SITE_BASE_URL" + "api/"
 
 /**
  * The site configuration, imported by the generated `docusaurus.config.mjs`.
@@ -50,7 +62,7 @@ private const val SITE_BASE_URL = "/__REPO__/docs/"
 fun docusaurusConfig(): Config = unsafeJso {
     title = "__PROJECT__"
     tagline = "Documentation for __PROJECT__"
-    url = "https://__OWNER__.github.io"
+    url = SITE_URL
     baseUrl = SITE_BASE_URL
     trailingSlash = true
     // A broken internal link fails the build instead of shipping a 404 to the Pages site.
@@ -109,6 +121,18 @@ fun docusaurusConfig(): Config = unsafeJso {
                     label = "Docs"
                     position = NavbarItemPositions.left
                 },
+                // The documentation is the entry point, so the demo and the API reference are jumps
+                // out of it rather than the other way around.
+                unsafeJso<NavbarItem> {
+                    label = "Demo"
+                    href = DEMO_URL
+                    position = NavbarItemPositions.left
+                },
+                unsafeJso<NavbarItem> {
+                    label = "API"
+                    href = API_URL
+                    position = NavbarItemPositions.left
+                },
                 unsafeJso<NavbarItem> {
                     type = NavbarItemTypes.localeDropdown
                     position = NavbarItemPositions.right
@@ -137,6 +161,14 @@ fun docusaurusConfig(): Config = unsafeJso {
             unsafeJso<SimpleFooter> {
                 style = FooterStyles.dark
                 links = arrayOf(
+                    unsafeJso {
+                        label = "Demo"
+                        href = DEMO_URL
+                    },
+                    unsafeJso {
+                        label = "API"
+                        href = API_URL
+                    },
                     unsafeJso {
                         label = "GitHub"
                         href = REPOSITORY

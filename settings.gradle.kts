@@ -45,7 +45,7 @@ rootProject.name = "__PROJECT__"
 include(":demo")
 
 // The documentation site: Kotlin configuration plus Markdown, assembled by the ktjs-docusaurus
-// Gradle plugin into a static site that `pagesSite` publishes under `/docs/`.
+// Gradle plugin into a static site that `pagesSite` publishes at the Pages root.
 include(":docs")
 
 // scripts/init-wrapper-project.py appends one include per wrapper module below. The template ships

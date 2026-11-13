@@ -7,6 +7,14 @@
     "message": "文档",
     "description": "Navbar item with label Docs"
   },
+  "item.label.Demo": {
+    "message": "演示",
+    "description": "Navbar item with label Demo"
+  },
+  "item.label.API": {
+    "message": "API",
+    "description": "Navbar item with label API"
+  },
   "item.label.GitHub": {
     "message": "GitHub",
     "description": "Navbar item with label GitHub"

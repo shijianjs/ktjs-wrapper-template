@@ -192,15 +192,15 @@ tasks.register("printPublishedVersions") {
     }
 }
 
-// Assembles the GitHub Pages site: the demo at the root, the documentation under /docs/ and the API
-// reference under /api/. The docs site's `baseUrl` (in its Config.kt) has to mirror the directory it
-// is copied into here.
+// Assembles the GitHub Pages site: the documentation at the root, the demo under /demo/ and the API
+// reference under /api/. The docs site's `baseUrl` and the two links it builds from it (in Config.kt)
+// have to mirror this layout.
 tasks.register<Sync>("pagesSite") {
     dependsOn(":demo:jsBrowserDistribution", ":docs:docusaurusBuild", "dokkaGeneratePublicationHtml")
     into(layout.buildDirectory.dir("pages"))
-    from(project(":demo").layout.buildDirectory.dir("dist/js/productionExecutable"))
-    from(layout.buildDirectory.dir("js/docusaurus/docs/build")) {
-        into("docs")
+    from(layout.buildDirectory.dir("js/docusaurus/docs/build"))
+    from(project(":demo").layout.buildDirectory.dir("dist/js/productionExecutable")) {
+        into("demo")
     }
     from(layout.buildDirectory.dir("dokka/html")) {
         into("api")

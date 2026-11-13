@@ -4,8 +4,8 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**[在线演示](https://__OWNER__.github.io/__REPO__/)** ·
-**[文档](https://__OWNER__.github.io/__REPO__/docs/)** ·
+**[文档](https://__OWNER__.github.io/__REPO__/)** ·
+**[在线演示](https://__OWNER__.github.io/__REPO__/demo/)** ·
 **[API 文档](https://__OWNER__.github.io/__REPO__/api/)**
 
 仓库按 npm 包（或一组共享上游版本与发版节奏的包）划分 `__PREFIX__-*` Gradle 模块。终端应用打包时
@@ -51,7 +51,7 @@ Gradle 从这两份文件推导基础版本和 `npm(...)` 依赖：
 # 文档站：Kotlin 配置 + Markdown 页面，由 ktjs-docusaurus 构建
 ./gradlew :docs:docusaurusBuild
 
-# GitHub Pages 站点（根目录是 demo，文档在 /docs/，API 文档在 /api/）
+# GitHub Pages 站点（根目录是文档，demo 在 /demo/，API 文档在 /api/）
 ./gradlew pagesSite
 ```
 

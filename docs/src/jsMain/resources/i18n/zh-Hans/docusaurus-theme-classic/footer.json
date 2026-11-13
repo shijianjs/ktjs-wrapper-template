@@ -1,4 +1,12 @@
 {
+  "link.item.label.Demo": {
+    "message": "演示",
+    "description": "The label of footer link with label=Demo"
+  },
+  "link.item.label.API": {
+    "message": "API",
+    "description": "The label of footer link with label=API"
+  },
   "link.item.label.GitHub": {
     "message": "GitHub",
     "description": "The label of footer link with label=GitHub"

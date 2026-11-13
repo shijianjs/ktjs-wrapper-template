@@ -4,8 +4,8 @@ Kotlin/JS wrappers for the [`__NPM_PACKAGE__`](https://www.npmjs.com/package/__N
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**[Live demo](https://__OWNER__.github.io/__REPO__/)** ·
-**[Documentation](https://__OWNER__.github.io/__REPO__/docs/)** ·
+**[Documentation](https://__OWNER__.github.io/__REPO__/)** ·
+**[Live demo](https://__OWNER__.github.io/__REPO__/demo/)** ·
 **[API reference](https://__OWNER__.github.io/__REPO__/api/)**
 
 The repository keeps one `__PREFIX__-*` Gradle module per npm package, or per group of packages
@@ -58,7 +58,7 @@ the `npm(...)` dependency from these two files:
 # Documentation site: Kotlin configuration, Markdown pages, built by ktjs-docusaurus
 ./gradlew :docs:docusaurusBuild
 
-# GitHub Pages site (demo at the root, documentation under /docs/, Dokka output under /api/)
+# GitHub Pages site (documentation at the root, demo under /demo/, Dokka output under /api/)
 ./gradlew pagesSite
 ```
 
