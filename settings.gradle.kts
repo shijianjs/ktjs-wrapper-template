@@ -39,14 +39,15 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "__PROJECT__"
+rootProject.name = "ktjs-wrapper-template"
 
-// The demo is the GitHub Pages site, not a published module.
+// One Gradle project per published wrapper module. The sample module wraps a single npm package;
+// a derived project adds one include per package (or per group of packages that release together).
+include(":ktjs-wrapper-template-core")
+
+// The demo page, published under /demo/ of the Pages site. Not a published module.
 include(":demo")
 
 // The documentation site: Kotlin configuration plus Markdown, assembled by the ktjs-docusaurus
 // Gradle plugin into a static site that `pagesSite` publishes at the Pages root.
 include(":docs")
-
-// scripts/init-wrapper-project.py appends one include per wrapper module below. The template ships
-// none on purpose: replace the placeholders and run the script before the first build.

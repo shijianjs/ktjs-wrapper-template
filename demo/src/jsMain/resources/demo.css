@@ -33,6 +33,12 @@ body {
     padding: 2rem 1.5rem 4rem;
 }
 
-.hint {
+.hint,
+.status {
     color: var(--page-muted);
+}
+
+/* The demo page is a plain page, so the element it wraps can be spaced with a tag selector here. */
+.page vaadin-button {
+    margin-right: 0.5rem;
 }

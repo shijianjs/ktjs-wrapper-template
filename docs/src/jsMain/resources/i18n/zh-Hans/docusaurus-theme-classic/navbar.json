@@ -1,6 +1,6 @@
 {
   "title": {
-    "message": "__PROJECT__",
+    "message": "ktjs-wrapper-template",
     "description": "The title in the navbar"
   },
   "item.label.Docs": {

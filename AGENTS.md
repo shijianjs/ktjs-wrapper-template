@@ -17,18 +17,20 @@
 
 ## 项目概况与模块结构
 
-`__PROJECT__` 为 [`__NPM_PACKAGE__`](https://www.npmjs.com/package/__NPM_PACKAGE__) 提供 Kotlin/JS wrapper。
+`ktjs-wrapper-template` 为 [`@vaadin/button`](https://www.npmjs.com/package/@vaadin/button) 提供 Kotlin/JS
+wrapper。**本仓库自己就是模板，也是一个能立刻跑的项目**：没有占位符，没有初始化脚本，复制改名即可用
+（`git clone` / GitHub 的 Use this template）。`README.md` 与站点的「派生新项目」页是改名清单。
 
-- `__PREFIX__-__MODULE__`：发布模块，`version = {上游 npm 版本}-kt.{修订号}`。
-- `demo`：GitHub Pages 演示站点，不发布、也不进入 Dokka。
+- `ktjs-wrapper-template-core`：发布模块，也是示例模块（一个 npm 包、一个 Gradle 模块、一个 Kotlin 包）。
+  `version = {上游 npm 版本}-kt.{修订号}`。
+- `demo`：演示页，发布在 Pages 的 `/demo/`，不发布到 Maven、也不进入 Dokka。
 - `docs`：文档站，也是 Pages 的主体。它同样是 Kotlin/JS 模块——站点配置与侧边栏是 Kotlin、页面是
   Markdown，由 [ktjs-docusaurus](https://github.com/shijianjs/ktjs-docusaurus) 的 Gradle 插件组装并调用
   Docusaurus CLI。`pagesSite` 把它放在 Pages **根目录**，demo 在 `/demo/`、API 在 `/api/`：`baseUrl`
-  （`/__REPO__/`）和导航里那两个跳转都由 `Config.kt` 顶部的常量推出来，改布局要一起改。
+  （`/ktjs-wrapper-template/`）和导航里那两个跳转都由 `Config.kt` 顶部的常量推出来，改布局要一起改。
   不发布、也不进 Dokka。版本在 `gradle.properties`：`ktjs-docusaurus.version` 是 wrapper klib 的，
   `ktjs-docusaurus-gradle-plugin.version` 是插件的（那个项目每个模块各有 `-kt.N` 修订号）；写 SNAPSHOT
   时从 `mavenLocal` 解析，也就是先在那两个构建里各跑一次 `publishToMavenLocal`。
-- `scaffold/module`：新增模块时复制的骨架，不参与构建。
 
 Kotlin 包名统一以账号的 GitHub Pages 域名倒写为前缀：`io.github.<owner>.ktjs.<name>`。不要用裸根包
 （`vaadin`、`echarts`、`iconify` 之类），否则项目间以及与其他库容易在同一 classpath 上撞包。新增模块时
@@ -112,12 +114,16 @@ wrapper 的目标是让上游 npm 包暴露的公开 API 在 Kotlin/JS 侧都能
 
 ### 新增模块
 
-1. 复制 `scaffold/module` 为 `__PREFIX__-<name>`，替换文件里的所有占位符（包名、npm 包名、项目名）。
-2. `settings.gradle.kts` 加 `include(":__PREFIX__-<name>")`。
-3. `package.json` 的 `dependencies` 加 npm 包版本；`wrapper-revisions.properties` 加 `__PREFIX__-<name>=1`。
-4. `demo/build.gradle.kts` 的 `jsMain.dependencies` 加 `implementation(project(":__PREFIX__-<name>"))`，
+模板没有骨架目录，`ktjs-wrapper-template-core` 就是骨架：复制整个模块目录，再把它改成新的名字与包。
+
+1. 复制 `ktjs-wrapper-template-core` 为 `ktjs-wrapper-template-<name>`，改 `build.gradle.kts` 里的
+   `npmVersions.getValue("<包名>")` 与 `description`，以及 `src/*/kotlin` 下的包路径与 `package` 行。
+2. `settings.gradle.kts` 加 `include(":ktjs-wrapper-template-<name>")`。
+3. `package.json` 的 `dependencies` 加 npm 包版本；`wrapper-revisions.properties` 加 `ktjs-wrapper-template-<name>=1`。
+4. `demo/build.gradle.kts` 的 `jsMain.dependencies` 加 `implementation(project(":ktjs-wrapper-template-<name>"))`，
    并在 demo 里实际使用它。
-5. 全局替换时同步检查 `detekt`、Dependabot 分组、README 模块表与 Dokka（Dokka 按前缀自动收集，无需改）。
+5. 同步检查 Dependabot 分组（`.github/dependabot.yml` 的 `upstream` patterns）、README 模块表与站点页面；
+   Dokka 按 `publishedPrefix` 自动收集，无需改。
 
 模块名、`wrapper-revisions.properties` 的 key、目录名三者必须完全一致，否则配置阶段会失败。
 
@@ -398,19 +404,17 @@ bundle，而消费方打包时本来就会摇树，保留 public API 没有额�
 
 - `.github/workflows/ci.yml` 只在**所有 PR** 和手动触发时运行 `./gradlew build`（JDK 21，Ubuntu），
   **不被 push 触发**：能进默认分支的提交已经在 PR 上跑过同一套构建。`pull_request.branches` 同时列了
-  `main` 和 `master`，因为生成的项目两者都有；漏掉实际默认分支会让 CI 静默不跑，连带 Dependabot 的
+  `main` 和 `master`，因为派生项目两者都有；漏掉实际默认分支会让 CI 静默不跑，连带 Dependabot 的
   自动合并永不触发。需要验证默认分支现状时用 `gh workflow run ci.yml`。
-- 模板仓库自己**跑不了构建**：`__PROJECT__` 占位符会让 npm 拒绝 `__PROJECT__-demo` 这个包名，所以
-  `ci.yml` 第一步检查 `settings.gradle.kts` 里还有没有 `__PROJECT__`，没初始化就跳过后面所有步骤
-  （run 仍然算成功，Dependabot 的自动合并才能走完）。生成的项目里占位符已被替换，照常执行。
+- **本仓库和派生项目跑的是同一套构建**：没有「模板仓库特殊、跳过」的分支。以前有个「占位符还在就跳过
+  所有步骤」的检查步骤，占位符去掉之后一起删了；现在 `ci.yml` 第一步就是装浏览器测试依赖。
 - `.github/workflows/dependabot-auto-merge.yml` 在 CI 成功后自动 squash 合并 Dependabot 的 PR。它用
   `workflow_run` 而不是直接由 Dependabot PR 触发，因为后者拿到的 `GITHUB_TOKEN` 只读。下载 CI 产出的
-  `npm-lock` artifact 是 `continue-on-error`：模板仓库没有锁文件可刷，缺这个 artifact 不该卡住合并。
+  `npm-lock` artifact 是 `continue-on-error`：Dependabot 的 PR 可能没有需要刷新的锁文件，缺这个 artifact
+  不该卡住合并。
 - `.github/dependabot.yml` 覆盖 `gradle`、`npm`（根目录 `package.json`）和 `github-actions` 三个生态。
-  npm 版本由 Dependabot 改 `package.json`，Gradle 自动读取，不再手工改 `npm(...)`。模板仓库自身的
-  `package.json` 里 `dependencies` 是空的：留占位符（`__NPM_PACKAGE__` + `__NPM_VERSION__`）会让
-  Dependabot 的 npm 更新任务每周以 `illformed_requirement` 失败，所以第一个上游包由
-  `scripts/init-wrapper-project.py` 写进去。
+  npm 版本由 Dependabot 改 `package.json`，Gradle 自动读取，不再手工改 `npm(...)`。`upstream` 分组里列
+  着本仓库包装的包（目前是 `@vaadin/button`），派生项目按自己的包替换。
 - Gradle wrapper 固定在 `9.4.1`，并在 Dependabot 里忽略 `gradle-wrapper`：IntelliJ IDEA 2026.2.3
   同步 Gradle 9.8.x 项目时会报 `ExternalSystemPartialResolutionException`（消息为空），回退到 9.4.1
   即恢复正常。等 IDEA 修复后再删除这条 ignore 并升级。
@@ -429,7 +433,7 @@ bundle，而消费方打包时本来就会摇树，保留 public API 没有额�
 ## 发布到 Maven Central
 
 发布配置统一在根 `build.gradle.kts` 的 `subprojects {}` 里，使用 `com.vanniktech.maven.publish`，
-group 固定为 `io.github.__OWNER__`。`subprojects` 的 group 必须单独设置，根项目的 `group` 不会自动继承。
+group 固定为 `io.github.shijianjs`。`subprojects` 的 group 必须单独设置，根项目的 `group` 不会自动继承。
 
 发布是两段式，Central 只在第二段被触及：
 
@@ -437,12 +441,12 @@ group 固定为 `io.github.__OWNER__`。`subprojects` 的 group 必须单独设�
    签名 → 发布到模块内的 `build/hub-staging` 文件仓库 → `scripts/hub-release.py` 为**每个 Maven 坐标**
    打一个 `.tar.xz` 并生成注册 → 创建/更新 GitHub Release 并上传归档 → 把注册推到 hub → 触发 hub 的
    `upload=false` dry run 并等待它结束。
-2. hub（`__OWNER__/maven-central-publishing`）手动 dispatch 且勾选 `upload=true`，才真正上传 Central，
+2. hub（`shijianjs/maven-central-publishing`）手动 dispatch 且勾选 `upload=true`，才真正上传 Central，
    并在成功后删除已满足的注册。
 
 ```bash
 gh workflow run release.yml -f release=release-1 \
-  -f modules=__PREFIX__-__MODULE__
+  -f modules=ktjs-wrapper-template-core
 ```
 
 - `release`：`release-<数字>`，tag 由工作流创建；工作流不会移动已有 tag。
@@ -460,7 +464,7 @@ gh workflow run release.yml -f release=release-1 \
 
 ### 一次性准备
 
-1. 在 [Central Portal](https://central.sonatype.com/) 注册账号并验证 `io.github.__OWNER__` namespace
+1. 在 [Central Portal](https://central.sonatype.com/) 注册账号并验证 `io.github.shijianjs` namespace
    （GitHub 方式）。
 2. 生成 GPG 密钥并发布公钥到 `keys.openpgp.org` / `keyserver.ubuntu.com`。
 3. 在本仓库 Settings → Secrets 配置 `MAVEN_CENTRAL_SIGNING_KEY`、`MAVEN_CENTRAL_SIGNING_KEY_PASSWORD`
@@ -476,10 +480,10 @@ gh workflow run release.yml -f release=release-1 \
 ```bash
 ORG_GRADLE_PROJECT_signingInMemoryKey="$(< ~/central-signing-key.txt)" \
 ORG_GRADLE_PROJECT_signingInMemoryKeyPassword=... \
-./gradlew :__PREFIX__-__MODULE__:publishAllPublicationsToHubStagingRepository
+./gradlew :ktjs-wrapper-template-core:publishAllPublicationsToHubStagingRepository
 
-python3 scripts/hub-release.py --project __OWNER__/__REPO__ --release release-1 \
-  --module __PREFIX__-__MODULE__=<version> --repository . \
+python3 scripts/hub-release.py --project shijianjs/ktjs-wrapper-template --release release-1 \
+  --module ktjs-wrapper-template-core=<version> --repository . \
   --archives build/hub-release/archives --registrations build/hub-release
 ```
 
@@ -507,7 +511,7 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 ## 演示页面与 GitHub Pages
 
 - `demo` 只消费公共 API，不发布、也不进入 Dokka。根 `build.gradle.kts` 的发布与 Dokka 配置按
-  `__PREFIX__-` 前缀过滤子模块，新增非发布模块时沿用该约定。
+  `ktjs-wrapper-template-` 前缀过滤子模块，新增非发布模块时沿用该约定。
 - 端到端测试是 `demo` 的 JVM 目标里的 Playwright JUnit 5 套件（`demo/src/jvmTest/kotlin/demo/e2e`）：
   Playwright 驱动打包后的 `demo/build/dist/js/productionExecutable`，`DemoServer` 用 Hutool 的
   `SimpleServer` 在测试 JVM 内提供静态文件。运行 `./gradlew :demo:e2eTest`；它不在 `check` 里，CI 在
@@ -537,11 +541,11 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 ## 模板同步与升级
 
 本文件同时是 [`shijianjs/ktjs-wrapper-template`](https://github.com/shijianjs/ktjs-wrapper-template) 的
-`AGENTS.md` 模板，只写适用于所有 wrapper 项目的通用约定：不出现具体项目名、npm 包名、模块名、版本号或
-仓库地址；与具体领域相关的清单和规则写在派生项目自己的 `AGENTS.md`。
+`AGENTS.md`：那份是本仓库的（示例模块 `ktjs-wrapper-template-core` 包 `@vaadin/button`），派生项目把项目名、
+包名、模块名换掉，通用约定原样保留。
 
 - 在派生项目里总结出对所有 wrapper 项目都成立的约定（构建、测试、发布、DOM/UI 约定、上游 API 建模等）
-  时，主动把它同步到模板仓库：先读模板现状，已有等价内容就跳过，缺失或过时就用通用措辞补上或修正；
+  时，主动把它同步回模板仓库：先读模板现状，已有等价内容就跳过，缺失或过时就用通用措辞补上或修正；
   完成后自动提交并推送模板仓库，不需要逐次征求同意。
 - 只回灌通用部分。项目专属的包清单、目录名、演示内容、版本号留在派生项目。
 - 优先就地修改或扩展现有小节，不要为同一主题新开重复小节。

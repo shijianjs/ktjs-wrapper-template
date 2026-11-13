@@ -9,13 +9,13 @@ plugins {
 val npmVersions = rootProject.extra["npmVersions"] as Map<String, String>
 @Suppress("UNCHECKED_CAST")
 val wrapperRevisions = rootProject.extra["wrapperRevisions"] as Map<String, Int>
-val upstreamVersion = npmVersions.getValue("__NPM_PACKAGE__")
+val upstreamVersion = npmVersions.getValue("@vaadin/button")
 val wrapperRevision = wrapperRevisions.getValue(project.name)
 // Empty in a release build, `-SNAPSHOT` in a working tree: see the note in the root build script.
 @Suppress("UNCHECKED_CAST")
 val versionSuffix = rootProject.extra["versionSuffix"] as String
 version = "$upstreamVersion-kt.$wrapperRevision$versionSuffix"
-description = "Kotlin/JS wrapper for the __NPM_PACKAGE__ package."
+description = "Kotlin/JS wrapper for the @vaadin/button package."
 
 kotlin {
     js {
@@ -27,13 +27,16 @@ kotlin {
             target = "es2015"
         }
 
-        // Browser test runtime. Swap to `nodejs()` (and jsNodeTest) for a Node-only package.
+        // The wrapped package is a custom element: it needs a DOM, so the tests run in Chromium
+        // (Playwright) instead of Node. A Node-only package would use `nodejs()` and `jsNodeTest`.
         browser {
             @OptIn(ExperimentalJsTestDsl::class)
             test {
                 chromium()
             }
         }
+
+        binaries.library()
     }
 
     compilerOptions {
@@ -46,11 +49,11 @@ kotlin {
 
     sourceSets {
         jsMain.dependencies {
-            implementation(npm("__NPM_PACKAGE__", upstreamVersion))
+            implementation(npm("@vaadin/button", upstreamVersion))
 
-            // Uncomment for packages whose API exposes DOM types. Public declarations must then use
-            // kotlin-browser's web.* types, never org.w3c.dom.* or kotlinx.browser.*.
-            // api("org.jetbrains.kotlin-wrappers:kotlin-browser:2026.10.1")
+            // The public surface exposes kotlin-browser types (`HTMLElement`, `TagName`), so this is
+            // `api`: a consumer compiles against them through this module.
+            api("org.jetbrains.kotlin-wrappers:kotlin-browser:2026.11.0")
         }
         jsTest.dependencies {
             implementation(kotlin("test"))

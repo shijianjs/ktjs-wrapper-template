@@ -3,7 +3,7 @@ name: Release
 # One release publishes one or more wrapper modules. Central itself is never contacted from here:
 # this workflow signs the artifacts, packages one archive per Maven coordinate, attaches the archives
 # to a GitHub release and registers them with the Maven Central hub
-# (__OWNER__/maven-central-publishing). The hub merges every pending registration into a single
+# (shijianjs/maven-central-publishing). The hub merges every pending registration into a single
 # Central deployment, so several modules released together still cost one Release Count.
 #
 # `verify` runs the hub's own `jreleaser deploy --dry-run`. It exercises the complete hand-off 鈥?# download, sha256, archive layout, signatures, repo1 pruning and bundle creation 鈥?without
@@ -22,7 +22,7 @@ on:
         default: ""
         type: string
       register:
-        description: "Commit the registrations to __OWNER__/maven-central-publishing"
+        description: "Commit the registrations to shijianjs/maven-central-publishing"
         required: false
         default: true
         type: boolean
@@ -42,7 +42,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  HUB_REPOSITORY: __OWNER__/maven-central-publishing
+  HUB_REPOSITORY: shijianjs/maven-central-publishing
   HUB_BRANCH: main
 
 jobs:
@@ -149,7 +149,7 @@ jobs:
               f"Wrapper modules released together as `{release}`.",
               "",
               "Maven Central publication is merged into a single deployment by",
-              "[maven-central-publishing](https://github.com/__OWNER__/maven-central-publishing).",
+              "[maven-central-publishing](https://github.com/shijianjs/maven-central-publishing).",
               "",
               "| Coordinate | Archive | Files | Bytes |",
               "| --- | --- | ---: | ---: |",

@@ -1,18 +1,20 @@
 ---
-title: __PROJECT__
-description: Documentation for __PROJECT__
+title: ktjs-wrapper-template
+description: A Kotlin/JS wrapper project that already runs
 hide_table_of_contents: true
 ---
 
-# __PROJECT__
+# ktjs-wrapper-template
 
-Kotlin/JS wrapper for [`__NPM_PACKAGE__`](https://www.npmjs.com/package/__NPM_PACKAGE__).
+A Kotlin/JS wrapper project that already works: one published module wrapping
+[`@vaadin/button`](https://www.npmjs.com/package/@vaadin/button), a demo page, this documentation
+site, and the tests and release pipeline around them. Copy the repository and rename it — that is the
+whole setup, because nothing here is a placeholder waiting to be filled in.
 
-- [Introduction](intro) — what the project is and how this site is put together.
-- [Getting started](guide/getting-started) — the dependency, the build task and the dev server.
-- [Live demo](https://__OWNER__.github.io/__REPO__/demo/) — the page the `demo` module builds.
-- [API reference](https://__OWNER__.github.io/__REPO__/api/) — Dokka output for the published modules.
-
-This page is `src/jsMain/resources/pages/index.mdx`. Markdown and MDX both work; a landing page that
-needs custom elements (the ktjs-docusaurus kit, for example) registers them from a browser-only
-bundle instead of from this module, because Node loads the configuration.
+- [Introduction](intro) — what is in it and why it runs as-is.
+- [Getting started](guide/getting-started) — build, test, dev servers.
+- [Deriving a project](guide/deriving-a-project) — the rename checklist.
+- [Live demo](https://shijianjs.github.io/ktjs-wrapper-template/demo/) — the page the `demo` module
+  builds.
+- [API reference](https://shijianjs.github.io/ktjs-wrapper-template/api/) — Dokka output for the
+  published modules.

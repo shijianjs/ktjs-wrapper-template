@@ -1,6 +1,8 @@
 {
-  "name": "__PREFIX__-npm-versions",
+  "name": "ktjs-wrapper-template-npm-versions",
   "private": true,
   "description": "Source of truth for npm package versions used by the Kotlin/JS build. Read by build.gradle.kts and updated by Dependabot.",
-  "dependencies": {}
+  "dependencies": {
+    "@vaadin/button": "25.3.5"
+  }
 }

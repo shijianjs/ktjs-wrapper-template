@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Package published coordinates into hub archives and build their registrations.
 
-The Maven Central hub (`__OWNER__/maven-central-publishing`) publishes nothing itself: a release
+The Maven Central hub (`shijianjs/maven-central-publishing`) publishes nothing itself: a release
 here hands it one archive per Maven coordinate plus a registration that names it. This script turns
 the file repository produced by `publishAllPublicationsToHubStagingRepository` into exactly that,
 and it checks the same rules the hub applies so a mistake is caught here rather than in someone
@@ -28,7 +28,7 @@ import urllib.parse
 from dataclasses import dataclass, field
 from pathlib import Path
 
-GROUP = "io.github.__OWNER__"
+GROUP = "io.github.shijianjs"
 GROUP_PATH = GROUP.replace(".", "/")
 # A Gradle plugin has two coordinates: the jar under GROUP, and a marker publication whose group is
 # the plugin id itself, i.e. `<id>:<id>.gradle.plugin:<version>`. The marker is what makes

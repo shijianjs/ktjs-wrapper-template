@@ -8,8 +8,8 @@ import kotlin.test.assertTrue
 import org.junitpioneer.jupiter.RetryingTest
 
 /**
- * Smoke checks for the scaffold demo page: it must load the bundle, apply its stylesheet, render the
- * project heading and produce no console errors or failed requests.
+ * Smoke checks for the demo page: it must load the bundle, apply its stylesheet, render the wrapped
+ * custom element and produce no console errors or failed requests.
  */
 @UsePlaywright(DemoOptions::class)
 class DemoPageTest {
@@ -17,11 +17,38 @@ class DemoPageTest {
     fun `page renders the project heading and styles`(page: Page) {
         openPage(page)
 
-        assertTrue(page.title().contains("__PROJECT__"), "title: ${page.title()}")
-        assertEquals("__PROJECT__ demo", page.locator("h1").textContent())
+        assertTrue(page.title().contains("ktjs-wrapper-template"), "title: ${page.title()}")
+        assertEquals("ktjs-wrapper-template demo", page.locator("h1").textContent())
 
         val display = page.locator(".page").evaluate("(node) => getComputedStyle(node).display") as String
         assertTrue(display != "contents", "the stylesheet applies to .page (display = $display)")
+    }
+
+    @RetryingTest(maxAttempts = 2)
+    fun `the wrapped element is upgraded and reacts to a click`(page: Page) {
+        openPage(page)
+
+        val counter = page.locator("vaadin-button").first()
+        assertEquals("Click me", counter.textContent())
+        assertEquals("Clicks: 0", page.locator(".status").textContent())
+
+        counter.click()
+
+        assertEquals("Clicked once", counter.textContent())
+        assertEquals("Clicks: 1", page.locator(".status").textContent())
+    }
+
+    @RetryingTest(maxAttempts = 2)
+    fun `the mapped property reaches the element`(page: Page) {
+        openPage(page)
+
+        val counter = page.locator("vaadin-button").first()
+        page.getByText("Disable the other button").click()
+
+        assertTrue(
+            counter.evaluate("(node) => node.disabled") as Boolean,
+            "clicking the second button sets the property on the first",
+        )
     }
 
     @RetryingTest(maxAttempts = 2)

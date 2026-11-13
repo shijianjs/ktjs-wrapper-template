@@ -4,46 +4,56 @@ sidebar_position: 1
 
 # Getting started
 
-## Add the dependency
+## Requirements
 
-The modules are published to Maven Central under the `io.github.__OWNER__` group:
+- JDK 21 or newer; the Gradle wrapper is checked in (9.4.1).
+- Node and npm are downloaded and driven by the Kotlin Gradle plugin — there is no `npm install` step
+  to remember, and `kotlin.js.yarn=false` keeps npm as the package manager.
+- Chromium is downloaded by Playwright the first time a browser test runs.
 
-```kotlin
-dependencies {
-    implementation("io.github.__OWNER__:__PREFIX__-__MODULE__:__NPM_VERSION__-kt.1")
-}
-```
-
-The klib records the npm package version it was built against, so the Kotlin/JS workspace installs
-the matching `__NPM_PACKAGE__` automatically.
-
-## Build this site
+## Build, test, publish
 
 ```bash
-./gradlew :docs:docusaurusBuild
+./gradlew build                    # compile, Detekt, browser tests
+./gradlew :ktjs-wrapper-template-core:jsBrowserTest
+./gradlew :demo:e2eTest            # Playwright against the bundled demo page
+./gradlew :docs:docusaurusBuild    # the documentation site
+./gradlew pagesSite                # documentation at /, demo at /demo/, Dokka at /api/
 ```
 
-The static site is written to `build/js/docusaurus/docs/build`.
+`build` does not run the demo's end-to-end suite or assemble the Pages site: both need a browser and
+are part of CI as separate steps.
 
-## Develop with a dev server
+## Develop
 
 ```bash
-./gradlew :docs:docusaurusStart
+./gradlew :docs:docusaurusStart    # dev server for this site
+./gradlew :demo:jsBrowserRun       # dev server for the demo page
 ```
 
-Docusaurus watches the site directory, so Markdown edits reload the page. Kotlin changes need a new
-build of the module first:
-
-```bash
-./gradlew :docs:docusaurusSite :docs:docusaurusStart
-```
+Docusaurus watches the site directory, so Markdown edits reload; Kotlin changes need
+`./gradlew :docs:docusaurusSite` first, because the site imports the compiled module.
 
 ## Where things live
 
 | Path | Contents |
 | --- | --- |
-| `src/jsMain/kotlin/__PACKAGE__/docs/Config.kt` | Site configuration and sidebar |
-| `src/jsMain/resources/docs` | Markdown pages |
-| `src/jsMain/resources/pages` | MDX pages (`index.mdx` is the landing page) |
-| `src/jsMain/resources/css` | Extra stylesheets |
-| `src/jsMain/resources/i18n` | Translations; English is the source language |
+| `package.json` | the only place npm versions are declared (Dependabot maintains it) |
+| `wrapper-revisions.properties` | per-module `-kt.N` revision |
+| `ktjs-wrapper-template-core/src/jsMain/kotlin` | the wrapper declarations |
+| `ktjs-wrapper-template-core/src/jsTest/kotlin` | browser tests for them |
+| `demo/src/jsMain` | the demo page and its Kotlin entry point |
+| `docs/src/jsMain/kotlin` | the site configuration and sidebar |
+| `docs/src/jsMain/resources` | Markdown pages, MDX landing page, CSS, translations |
+
+## The lock file
+
+npm dependencies are resolved once for the whole workspace and pinned in
+`kotlin-js-store/package-lock.json`. After adding or upgrading an npm dependency — or changing a
+module's version — regenerate it:
+
+```bash
+./gradlew kotlinUpgradePackageLock
+```
+
+CI verifies the committed file, so a forgotten regeneration fails the build rather than drifting.

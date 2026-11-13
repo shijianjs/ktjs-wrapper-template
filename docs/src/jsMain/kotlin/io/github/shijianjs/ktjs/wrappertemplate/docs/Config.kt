@@ -1,4 +1,4 @@
-package __PACKAGE__.docs
+package io.github.shijianjs.ktjs.wrappertemplate.docs
 
 import io.github.shijianjs.ktjs.docusaurus.config.Config
 import io.github.shijianjs.ktjs.docusaurus.config.Directions
@@ -32,21 +32,21 @@ import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.js.unsafeCast
 
-private const val REPOSITORY = "https://github.com/__OWNER__/__REPO__"
+private const val REPOSITORY = "https://github.com/shijianjs/ktjs-wrapper-template"
 
-private const val SITE_URL = "https://__OWNER__.github.io"
+private const val SITE_URL = "https://shijianjs.github.io"
 
 /**
  * Where the site is served from: the GitHub Pages root. `pagesSite` puts the documentation here, the
  * demo under `/demo/` and the API reference under `/api/`.
  */
-private const val SITE_BASE_URL = "/__REPO__/"
+private const val SITE_BASE_URL = "/ktjs-wrapper-template/"
 
 /**
  * The two artifacts that sit next to the documentation on the same Pages deployment.
  *
  * Full URLs rather than paths: neither is a route of this Docusaurus build, and Docusaurus reports an
- * absolute internal path (`/__REPO__/demo/`) as a broken link. A full URL is treated as external, and
+ * absolute internal path (`/ktjs-wrapper-template/demo/`) as a broken link. A full URL is treated as external, and
  * it also survives the locale prefixes, where a relative link would resolve to nothing.
  */
 private const val DEMO_URL = "$SITE_URL$SITE_BASE_URL" + "demo/"
@@ -60,8 +60,8 @@ private const val API_URL = "$SITE_URL$SITE_BASE_URL" + "api/"
  */
 @JsExport
 fun docusaurusConfig(): Config = unsafeJso {
-    title = "__PROJECT__"
-    tagline = "Documentation for __PROJECT__"
+    title = "ktjs-wrapper-template"
+    tagline = "A Kotlin/JS wrapper project you can copy"
     url = SITE_URL
     baseUrl = SITE_BASE_URL
     trailingSlash = true
@@ -112,7 +112,7 @@ fun docusaurusConfig(): Config = unsafeJso {
 
     themeConfig = unsafeJso<ThemeConfig> {
         navbar = unsafeJso {
-            title = "__PROJECT__"
+            title = "ktjs-wrapper-template"
             hideOnScroll = true
             items = arrayOf(
                 unsafeJso<NavbarItem> {
@@ -196,6 +196,10 @@ fun sidebars(): SidebarsConfig = unsafeJso<Sidebars> {
         unsafeJso {
             type = SidebarItemTypes.doc
             id = "guide/getting-started"
+        },
+        unsafeJso {
+            type = SidebarItemTypes.doc
+            id = "guide/deriving-a-project"
         },
     )
 }.unsafeCast<SidebarsConfig>()

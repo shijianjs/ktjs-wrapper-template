@@ -30,8 +30,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      # pagesSite assembles build/pages: the demo at the root, Dokka output under /api/.
-      - name: Build demo and API reference
+      # pagesSite assembles build/pages: the documentation at the root, the demo under /demo/ and
+      # Dokka output under /api/.
+      - name: Build the Pages site
         run: ./gradlew pagesSite
 
       - name: Configure Pages

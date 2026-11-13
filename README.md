@@ -1,120 +1,91 @@
 # ktjs-wrapper-template
 
-脚手架模板：用 Kotlin/JS 为 npm 包（尤其是 Web Component 生态，如 Vaadin）生成一套可构建、可测试、
-可发布到 Maven Central 的多模块项目。
+A Kotlin/JS wrapper project that already runs: one Gradle module wrapping
+[`@vaadin/button`](https://www.npmjs.com/package/@vaadin/button), a demo page, a documentation site
+built with [ktjs-docusaurus](https://github.com/shijianjs/ktjs-docusaurus), and the tests and release
+pipeline around them.
 
-模板只提供通用基础设施：Gradle 多模块配置、Detekt 规则、npm 版本与 wrapper 修订号机制、
-Playwright 浏览器测试、demo + GitHub Pages、Maven Central 发布流水线与文档骨架。领域内容（被包装的
-API、示例页面、README 正文）由生成后的项目自己写。
+[English](README.md) | [简体中文](README.zh-CN.md)
 
-## 快速开始
+**[Documentation](https://shijianjs.github.io/ktjs-wrapper-template/)** ·
+**[Live demo](https://shijianjs.github.io/ktjs-wrapper-template/demo/)** ·
+**[API reference](https://shijianjs.github.io/ktjs-wrapper-template/api/)**
 
-1. 复制仓库（或在 GitHub 上 **Use this template**）：
+Copy the repository and rename it — that is the setup. Nothing here is a placeholder waiting for a
+script to fill it in, so `./gradlew build` works on the copy as it is. The rename checklist lives in
+the documentation: [Deriving a project](https://shijianjs.github.io/ktjs-wrapper-template/guide/deriving-a-project).
 
-   ```bash
-   git clone https://github.com/shijianjs/ktjs-wrapper-template.git ktjs-vaadin
-   cd ktjs-vaadin
-   ```
+## Modules
 
-2. 运行初始化脚本，替换全部占位符并生成第一个模块：
-
-   ```bash
-   python3 scripts/init-wrapper-project.py \
-     --prefix ktjs-vaadin \
-     --owner shijianjs \
-     --repo ktjs-vaadin \
-     --package io.github.shijianjs.ktjs.vaadin \
-     --module core \
-     --npm-package @vaadin/web-components \
-     --npm-version 25.0.0
-   ```
-
-3. 生成锁文件并验证：
-
-   ```bash
-   ./gradlew kotlinNpmInstall
-   ./gradlew kotlinUpgradePackageLock
-   ./gradlew build
-   ./gradlew :docs:docusaurusBuild
-   ./gradlew pagesSite
-   ./gradlew :demo:e2eTest
-   ```
-
-4. 按新项目重写 `demo`、`docs` 页面、各模块 README、根 README 模块表与 `AGENTS.md` 里的项目描述，
-   然后提交。初始化脚本会删除自己，重复运行会被拒绝。
-
-## 参数与占位符
-
-| 参数 | 占位符 | 说明 |
+| Module | npm package | Wrapper version |
 | --- | --- | --- |
-| `--prefix` | `__PREFIX__` | Gradle 模块前缀，例如 `ktjs-vaadin`；模块名为 `<prefix>-<module>` |
-| `--owner` | `__OWNER__` | GitHub 用户/组织；group 为 `io.github.<owner>` |
-| `--repo` | `__REPO__` | 仓库名，默认与 `--prefix` 相同 |
-| `--package` | `__PACKAGE__` | Kotlin 基础包名，例如 `io.github.shijianjs.ktjs.vaadin`；源码目录会同步重命名。留空则按 `io.github.<owner>.ktjs.<name>` 推导 |
-| `--module` | `__MODULE__` | 第一个模块的后缀，例如 `core` |
-| `--npm-package` | `__NPM_PACKAGE__` | 被包装的 npm 包名（scoped 包写全名） |
-| `--npm-version` | `__NPM_VERSION__` | 上游 npm 版本，作为 `{版本}-kt.1` 的基础 |
-| — | `__PROJECT__` | 项目显示名，默认等于 `--repo` |
-| — | `__YEAR__` | 当前年份，用于 LICENSE |
+| [ktjs-wrapper-template-core](ktjs-wrapper-template-core/README.md) | `@vaadin/button` | `25.3.5-kt.1` |
 
-`__MODULE__` 只用于 Gradle 模块名（`<prefix>-<module>`）与 `wrapper-revisions.properties` 的条目；
-Kotlin 包名完全由 `--package` 决定，新增模块时自行选择子包并替换 `scaffold/module` 里的占位符。
+The repository keeps one Gradle module per npm package, or per group of packages that share an
+upstream version and release cadence. Tree shaking removes unused declarations from the final
+application bundle, so grouping related packages into one module is cheaper than one module per
+package.
 
-所有 ktjs wrapper 的包名统一以账号的 GitHub Pages 域名倒写为前缀：`io.github.<owner>.ktjs.<name>`。
-不要用 `vaadin`、`echarts`、`iconify` 这类裸根包，避免与其他库在同一 classpath 上冲突。
+## Versioning
 
-## 脚本做了什么
+Each module is versioned as `{upstream npm version}-kt.{revision}`. The upstream npm versions are
+declared once in the root [`package.json`](package.json); the revision is read per module from
+[`wrapper-revisions.properties`](wrapper-revisions.properties). Gradle derives the base version and
+the `npm(...)` dependency from these two files:
 
-- 遍历仓库文本文件替换占位符（跳过 `.git`、`build`、`node_modules` 与脚本自身）；
-- 把 `scaffold/module` 复制为 `<prefix>-<module>`，并重命名 `src/**/kotlin/<package>` 目录（`docs`
-  模块的 Kotlin 包目录一起重命名）；
-- 在 `settings.gradle.kts` 追加 `include(":<prefix>-<module>")`；
-- 在 `demo/build.gradle.kts` 追加该模块的 `implementation(project(...))`；
-- 用 `scaffold/project/README*.md` 生成项目 README，然后删除模板说明与初始化脚本；
-- 保留 `scaffold/module`，供以后新增模块时复制（做法见 `AGENTS.md`）。
+- Only `-kt.N` versions are published; a version without the suffix never exists.
+- A working tree always adds `-SNAPSHOT`: the derived number is the *next* release, which Central does
+  not have yet, so development builds never impersonate it. Publishing passes `-Pktjs.release=true`,
+  which drops the suffix.
+- Upstream upgrade: change the version in `package.json`; the base version follows automatically
+  while the revision stays, even when the wrapper code itself did not change.
+- Wrapper-only fix: the revision increments (`kt.2`, `kt.3`, ...) while the base version stays.
+- Revisions are tracked per module and only ever increase; they never reset to `kt.1`. A release
+  bumps and publishes only the modules that changed.
 
-## 初始化之后还需要手动做的事
+## Requirements
 
-- 重写 demo：示例目前只有一个标题，需要真正演示被包装的 API。
-- 补 KDoc、模块 README（中英文）和测试：脚手架里只有一个占位符自检测试。
-- 仓库 Settings：Secrets（签名密钥、`HUB_RELEASE_TOKEN`）、Pages Source 选 GitHub Actions。
-- Central Portal 验证 `io.github.<owner>` namespace；第一次发布用 `release-1`。
-- 若沿用 Maven Central hub：新增 `*-js` 坐标时先在 hub 的 `artifactOverrides` 里补 `jar: false`
-  并关闭 `verifyPom`，否则整批失败。详见生成后的 `AGENTS.md`。
+- JDK 21 or newer (the build uses Gradle 9.4.1).
+- Node and npm are downloaded automatically by the Kotlin Gradle plugin; `kotlin.js.yarn=false` in
+  `gradle.properties` keeps npm as the package manager.
+- Chromium is downloaded by Playwright the first time browser tests run.
 
-## 目录结构
+## Build and test
 
-```text
-.
-├── build.gradle.kts              # 插件、版本推导、发布、Dokka、Pages
-├── settings.gradle.kts
-├── package.json                  # npm 版本唯一来源
-├── wrapper-revisions.properties  # 每个发布模块的 -kt.N 修订号
-├── detekt.yml                    # 禁止 org.w3c.dom.* / kotlinx.browser.*
-├── scripts/
-│   ├── hub-release.py            # 归档 + hub 注册
-│   └── init-wrapper-project.py   # 模板初始化（运行后删除）
-├── scaffold/
-│   ├── module/                   # 模块骨架，新增模块时复制
-│   └── project/                  # 生成后的项目 README
-├── demo/                         # Pages 演示页 + Kotlin/JVM Playwright e2e
-├── docs/                         # 文档站：Kotlin 配置 + Markdown，由 ktjs-docusaurus 构建
-└── .github/workflows/            # CI、Pages、Release、Dependabot auto-merge
+```bash
+./gradlew build                    # compile, Detekt, browser tests
+./gradlew :ktjs-wrapper-template-core:jsBrowserTest
+
+# End-to-end checks for the demo page (Playwright, against the bundled output)
+./gradlew :demo:e2eTest
+
+# Documentation site: Kotlin configuration, Markdown pages, built by ktjs-docusaurus
+./gradlew :docs:docusaurusBuild
+
+# GitHub Pages site (documentation at the root, demo under /demo/, Dokka output under /api/)
+./gradlew pagesSite
 ```
 
-## 维护模板
+After adding or upgrading an npm dependency, refresh the shared lock file:
 
-- 模板里只放与具体上游无关的内容；某个包的用法、组件约定写进生成后的项目 `AGENTS.md`。
-- 修改后在一个临时目录完整跑一次初始化 + `./gradlew build`，确认占位符没有遗漏。
-- 生成后的项目从模板升级时用 `git diff` 人工 cherry-pick，不要把项目仓库反向覆盖模板。
+```bash
+./gradlew kotlinUpgradePackageLock
+```
 
-## 环境要求
+The `docs` module is a Kotlin/JS project too. Both of its versions live in `gradle.properties` —
+`ktjs-docusaurus.version` for the wrapper klib and `ktjs-docusaurus-gradle-plugin.version` for the
+plugin, because each module of that project carries its own `-kt.N` revision. A SNAPSHOT there is
+resolved from `mavenLocal`, so building the site against an unreleased wrapper means publishing that
+wrapper locally first.
 
-- JDK 17+（构建使用 Gradle 9.4.1）
-- Python 3（初始化脚本与发布脚本只用标准库）
-- Node.js 由 Kotlin Gradle 插件自动下载；Playwright 首次运行时下载 Chromium。演示页的端到端测试是
-  Kotlin/JVM 的 JUnit 5 用例，复用同一份浏览器。
+## Publishing
 
-## 许可证
+Publishing is configured once in the root [`build.gradle.kts`](build.gradle.kts) for all modules.
+Releases run through `.github/workflows/release.yml`: it signs the artifacts, packages one archive per
+Maven coordinate and registers them with the shared Maven Central hub, which merges the pending
+registrations into a single deployment. A derived project that does not want to publish can drop that
+workflow and the publishing block; nothing else depends on it.
 
-[MIT](LICENSE)
+## License
+
+Released under the [MIT License](LICENSE).
