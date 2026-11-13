@@ -161,7 +161,8 @@ stylis 当成**后代**选择器，而且就算上游 JetBrains/kotlin-wrappers#
 `pointer-events:none`、supports 条件类型）在项目自己的 `css` 包里按官方风格补，别退回文本；
 ⑤ 不要用 `kotlin-css`（`kotlinx.css`）那套旧 DSL——值不做校验、
 `transition` 会补 `0s`、`&` 不解析；逐条 `insertRule` 灌 CSSOM 也不要：`fallback()` 阶梯会被压成最后一条。
-完整清单见 `ktjs-dom-kit/docs/css-sheet.md`。
+完整清单见 `ktjs-dom-kit` 站点的「Typed stylesheets」页：<https://shijianjs.github.io/ktjs-dom-kit/dom-kit/css-sheet/>
+（源码在该仓库的 `docs/src/jsMain/resources/docs/dom-kit/css-sheet.md`，中文版在对应的 `i18n/zh-Hans/` 下）。
 
 类名只留给这些规则选中的节点。有了内联样式就不需要「每个节点一个语义 class」，多余 class 会让读者以为
 别处还有规则在用它。
