@@ -150,7 +150,7 @@ private val SHEET: CSSStyleSheet = cssSheet {          // ktjs-dom-kit：emotion
 收益不看行数，看**还剩多少 CSS 文本要手写**：同一段规则手写是 455 个字符的 CSS，上面一条声明也不用
 手写，只剩名字（自定义属性名）。几条实测约束：① 伪类用 `Pseudos` + `Pseudos.hover { }` / `pseudos(…)`
 （`TagName` + `HtmlTagName` 那套形态，64 个常量、每个带 `&`）；短写法来自 `context(RuleBuilder<T>)` +
-`operator Pseudo.invoke`（Kotlin 2.2+ context parameters，调用点要 import `…dom.css.invoke`），和官方
+`operator Pseudo.invoke`（Kotlin 2.2+ context parameters，调用点要 import `…dom.css.dsl.invoke`），和官方
 `hover { }` 一样但带 `&`、能组合；`hover {}` 糖自带的选择器是 `:hover`、缺 `&`，会被
 stylis 当成**后代**选择器，而且就算上游 JetBrains/kotlin-wrappers#2933 修好也写不出组合态，别等它；
 ② 过渡属性名用 `PropertyName.borderColor`（`PropertyName<T> : Ident`、
@@ -219,3 +219,14 @@ run.style.backgroundColor = 'var(--accent)';
   每棵树里都要 `*, *::before, *::after { box-sizing: border-box }`——这是共享 reset 的正当理由。
 - 结果区、编辑器这类「必须复用宿主 light DOM 规则」的组件才退回 light DOM，并写清依赖了哪条规则；
   三方部件往 document 注入样式表时，shadow 边界会让它失效，这类部件也因此更适合留在 light DOM。
+
+## 6. 共享样式的代价：为什么不主动共享
+
+「把公共样式提取出来」在评审里几乎总被当成好事，所以这里把反对的理由写清楚——它不是审美偏好，是几条具体的坏结果。
+
+- **全都共享，共享就不再共享。** 每段样式都被允许多个组件依赖时，「谁可以被谁改」这条边界就没了：读者看到一条规则，判断不出改动会波及哪几个页面，只能全量搜索。
+- **全都私有，真正共享的那份也找不出来。** 私有规则铺满目录之后，「哪几条是大家一起用的」要从噪音里挑出来，改共享反而成了最危险的动作。
+- **私有样式长在共享里，你不敢改、只敢加。** 它本来是某一个组件的细节，却因为住在共享文件里，任何改动都要所有组件一起接受；没人为它负责，于是只能往上叠，文件越来越长，最后谁也说不清哪条还在生效。
+- **共享本身就是一份承诺。** `:host { display: block }`、`box-sizing`、reset、主题 token、父容器布局之所以能共享，是因为它们有明确语义（「每个组件都必须这样」），改它等于同时改所有人——这是一份可以被评审、被写进文档的契约。没有这份承诺的样式，不该共享。
+
+所以顺序是：先默认私有（内联 → 组件自己的 sheet），只有在两个以上组件**必须一起变**、并且说得清那份承诺时，才升成共享。判定标准见 [`../SKILL.md`](../SKILL.md) 第三节与本文第 4 节。

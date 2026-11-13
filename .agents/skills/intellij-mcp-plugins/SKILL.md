@@ -32,24 +32,15 @@ description: 用脚本或命令行调用 IntelliJ IDEA 的 MCP server（官方�
 
 ## 前置条件
 
-- 两个 server 不可互换：语义查询（符号 / 引用 / 继承 / 重构 / 诊断）一律走 Index MCP（`ide_*`，端口
-  29170）；官方内置 server 只能做终端、跑非测试进程这类事，它没有 `project_path`，也不能开项目。
-- 目标项目没在 IDEA 里打开时先开：`ide_open_project`，Gradle / Maven 仓库带
-  `{"path": "S:/abs/repo", "autoLink": true}`，其它目录省略 `autoLink`；几个必须互相看见的仓库
-  （跨仓引用、rename、move）用**一次** `ide_open_workspace`，`modules` 列全或者给父目录。它默认禁用，
-  且要求至少已有一个项目在开着当 JSON-RPC 上下文；IDEA 不要求目录里有 `.idea`。每次打开都是一个要索引
-  的窗口，别为了查一个符号反复开。
-- 索引没跑完时工具会返回 `dumb mode` / `index not ready`：先 `ide_index_status`，等 `isDumbMode` 变
-  false 再重试，不要退回 grep。
-- 一批工具默认禁用、不出现在 `tools/list` 里，直接 `tools/call` 会被拒，需在
-  `Settings → Tools → Index MCP Server → Exposed Tools` 打开。常用的有 `ide_symbol_info`、
-  `ide_find_symbol`、`ide_read_file`、`ide_file_structure`、`ide_open_project`、`ide_build_project`。
+- IDE 已打开目标项目；多项目或 workspace 下调用必须带 `project_path`。
 - 插件版本 ≥ 5.20.4。核对方式：
   `Get-ChildItem "$env:APPDATA\JetBrains\IntelliJIdea*\plugins\jetbrains-index-mcp-plugin\lib" -Filter *.jar`
   （文件名里带版本号）。
 - Index MCP 插件默认地址：`http://127.0.0.1:29170/index-mcp/streamable-http`。
 - 官方内置 server 的 URL 随 IDE 版本变化（常见 63342 / 64342），用 `--url` 覆盖；它还需要 header
   `IJ_MCP_SERVER_PROJECT_PATH`。
+- 默认禁用的工具需在 `Settings → Tools → Index MCP Server → Exposed Tools` 打开，例如
+  `ide_symbol_info`、`ide_read_file`、`ide_find_symbol`。
 - `project_path` 要与 IDE 记录的大小写一致（Windows 上盘符是大写）：传 `s:/repo` 会得到
   `project_not_found` 并列出 `available_projects`，`S:/repo` 才对。`os.path.abspath` 的结果可直接用。
 
@@ -87,10 +78,10 @@ python scripts/mcp_client.py --url http://127.0.0.1:64342/stream \
 python scripts/hierarchy.py ktjs-dom-kit/src/jsMain/kotlin/Store.kt 42 7 --project S:/repo
 
 # 全限定名（Kotlin 也走 className，不要加 language）
-python scripts/hierarchy.py --class io.github.shijianjs.ktjs.dom.CustomElementAdapter --project S:/repo
+python scripts/hierarchy.py --class io.github.shijianjs.ktjs.dom.webcomponent.CustomElementAdapter --project S:/repo
 
 # 只看一层：直接父类型 + 直接子类型
-python scripts/hierarchy.py --class io.github.shijianjs.ktjs.dom.CustomElementAdapter --up 1 --down 1
+python scripts/hierarchy.py --class io.github.shijianjs.ktjs.dom.webcomponent.CustomElementAdapter --up 1 --down 1
 ```
 
 - `--up 0` / `--down 0` 关掉某个方向；`--scope` 默认 `project_and_libraries`，可选
@@ -101,7 +92,7 @@ python scripts/hierarchy.py --class io.github.shijianjs.ktjs.dom.CustomElementAd
 输出示例（`--up 3 --down 1`，实测节选）：
 
 ```text
-io.github.shijianjs.ktjs.dom.CustomElementAdapter  (ktjs-dom-kit/src/jsMain/kotlin/…/CustomElementAdapter.kt)  [Kotlin CLASS]
+io.github.shijianjs.ktjs.dom.webcomponent.CustomElementAdapter  (ktjs-dom-kit/src/jsMain/kotlin/…/CustomElementAdapter.kt)  [Kotlin CLASS]
 
 UP (supertypes):
   web.html.HTMLElement  @ kotlin-browser-js:2026.11.0/kotlin-browser-js-2026.11.0.klib!/default/linkdata/package_web.html/027_html.knm
@@ -127,10 +118,8 @@ DOWN (subtypes):
   Python 解析初始化失败（本机 2026-11-12 记到的根因是 Python 插件
   `IElementType TooManyElementTypesException: Out of (short) range`，由 Kubernetes 插件索引触发）。
   一旦发生，之后**所有**索引类工具调用都会连环失败，只能重启 IDE（`ide_restart` 或手动）。
-- `project_not_found`：路径大小写不一致，或项目没在 IDEA 里打开（用 `ide_open_project`）。
+- `project_not_found`：路径大小写不一致，或项目没在 IDEA 里打开。
 - Kotlin/JS 报 `not found` / `No class/type found`：插件版本低于 5.20.4。
-- 重启 IDE 后旧的 `symbolId` 与分页 `cursor` 全部失效，脚本的 `--symbol` 不能再复用；streamable-HTTP
-  客户端不用重连（每次调用都是独立 POST），等 `ide_index_status` 有响应再继续。
 - 两个 server 都监听 `127.0.0.1` 且无鉴权，共享机器上注意。
 
 ## 禁止事项

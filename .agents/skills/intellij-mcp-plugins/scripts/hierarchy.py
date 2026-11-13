@@ -12,7 +12,7 @@ reconstructs anything: it calls that tool and only adds what the tool does not d
 
 Usage:
   python hierarchy.py <file> <line> <column> [--project PATH] [--up N] [--down N]
-  python hierarchy.py --class io.github.shijianjs.ktjs.dom.CustomElementAdapter --project PATH
+  python hierarchy.py --class io.github.shijianjs.ktjs.dom.webcomponent.CustomElementAdapter --project PATH
   python hierarchy.py --symbol sym_xxx --project PATH
 """
 
