@@ -4,14 +4,44 @@ description: 一个立刻能跑的 Kotlin/JS wrapper 项目
 hide_table_of_contents: true
 ---
 
-# ktjs-wrapper-template
+import logo from '@site/static/img/ktjs-wrapper-template-logo.png';
 
-一个立刻能跑的 Kotlin/JS wrapper 项目：一个发布模块包装
-[`@vaadin/button`](https://www.npmjs.com/package/@vaadin/button)，加上 demo 页面、这个文档站，以及围绕
-它们的测试与发布流水线。复制仓库、改名即可——这里没有等着被替换的占位符，所以「配置」这一步就是改名。
+{/* `<ktjs-…>` 分区来自 ktjs-docusaurus 的工具箱：Gradle 插件把它的 bundle 放到 `static/ktjs-client/`，
+    `ClientModule.kt` 在页面 hydrate 之后加载它。`href` 写成相对路径，两种 locale 前缀下都能用；
+    `logo` 用 import 取，这样 URL 会带上本站实际的 `baseUrl`。 */}
 
-- [简介](intro)：里面有什么，为什么它直接能跑。
-- [快速开始](guide/getting-started)：构建、测试、开发服务器。
-- [派生新项目](guide/deriving-a-project)：改名的清单。
-- [在线演示](https://shijianjs.github.io/ktjs-wrapper-template/demo/)：`demo` 模块构建的页面。
-- [API 文档](https://shijianjs.github.io/ktjs-wrapper-template/api/)：发布模块的 Dokka 产物。
+<ktjs-hero logo-src={logo} title="ktjs-wrapper-template" tagline="一个可以照抄的 Kotlin/JS wrapper 项目">
+
+<ktjs-action kind="primary" href="intro">开始阅读</ktjs-action>
+
+<ktjs-action kind="secondary" href="https://github.com/shijianjs/ktjs-wrapper-template" icon="simple-icons:github">GitHub</ktjs-action>
+
+</ktjs-hero>
+
+<ktjs-features section-title="为什么从这里开始" tinted>
+
+<ktjs-feature icon="lucide:play" title="拿来就能跑">克隆下来就是一个能构建、能测试、能部署的项目——第一次 `./gradlew build` 之前没有任何占位符要填。</ktjs-feature>
+
+<ktjs-feature icon="lucide:package" title="一个包一个模块">一个 wrapper 模块把一个 npm 包映射成一个 Kotlin 包。加第二个包就是复制一个目录，不用重新设计结构。</ktjs-feature>
+
+<ktjs-feature icon="lucide:shield-check" title="类型而不是 dynamic">上游 `.d.ts` 写成 `external` 声明，编译期就能查；公开面用 `kotlin-browser` 的 `web.*` 类型，能和其他 wrapper 组合。</ktjs-feature>
+
+<ktjs-feature icon="lucide:flask-conical" title="在浏览器里测">模块的测试跑在 Chromium 里、打的是真实自定义元素，demo 还有自己的 Playwright 套件，两者都接进了 CI。</ktjs-feature>
+
+<ktjs-feature icon="lucide:book-open" title="文档也是 Kotlin">本站就是由 ktjs-docusaurus 构建的 Kotlin/JS 模块：类型化的配置与侧边栏、Markdown 页面、中英双语。</ktjs-feature>
+
+<ktjs-feature icon="lucide:rocket" title="Pages 与发布已接好">`pagesSite` 组装文档、demo 与 API 文档；`release.yml` 负责签名并经由 Maven Central hub 发布模块。</ktjs-feature>
+
+</ktjs-features>
+
+<ktjs-next-steps section-title="接下来">
+
+<ktjs-step href="intro" title="简介">仓库里有什么，为什么不用任何初始化就能用。</ktjs-step>
+
+<ktjs-step href="guide/getting-started" title="快速开始">环境要求、构建任务与两个开发服务器。</ktjs-step>
+
+<ktjs-step href="guide/deriving-a-project" title="派生新项目">把它改成你自己的 wrapper 的改名清单。</ktjs-step>
+
+<ktjs-step href="https://shijianjs.github.io/ktjs-wrapper-template/api/" title="API 文档">发布模块的 Dokka 产物。</ktjs-step>
+
+</ktjs-next-steps>

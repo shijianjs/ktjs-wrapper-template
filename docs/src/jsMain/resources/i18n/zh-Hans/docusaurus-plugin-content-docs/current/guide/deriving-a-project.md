@@ -33,6 +33,11 @@ sidebar_position: 2
 `SITE_BASE_URL`（仓库名）、`REPOSITORY`，以及指向 `/demo/` 与 `/api/` 的两条链接。
 `docs/src/jsMain/resources` 下只有内容；译文按同样的目录结构放在 `i18n/zh-Hans/`。
 
+首页用工具箱的 `<ktjs-hero>` / `<ktjs-features>` / `<ktjs-next-steps>` 分区。`ClientModule.kt` 与
+`docs/build.gradle.kts` 里的 `browserBundle` 接线照抄即可，只改文案。Logo 只有一份，在
+`docs/src/jsMain/resources/static/img/`，demo 的 `brandAssets` 任务会拷进自己的资源；换 logo 时替换该文件，
+并同步三处文件名（`Config.kt`、`demo/src/jsMain/resources/index.html`、`demo/.../Main.kt`）。
+
 ## 4. 验证
 
 ```bash

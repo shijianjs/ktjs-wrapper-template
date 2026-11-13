@@ -35,6 +35,12 @@ the compiler and the tests tell you what is left.
 pages under `docs/src/jsMain/resources` are content only; the translations mirror the same tree under
 `i18n/zh-Hans/`.
 
+The landing page uses the kit's `<ktjs-hero>` / `<ktjs-features>` / `<ktjs-next-steps>` sections. Keep
+`ClientModule.kt` and the `browserBundle` block in `docs/build.gradle.kts` as they are; only the copy
+changes. The logo has one source, `docs/src/jsMain/resources/static/img/`, and the demo's
+`brandAssets` task copies it into its own resources — replace that file and update the three places
+that name it (`Config.kt`, `demo/src/jsMain/resources/index.html`, `demo/.../Main.kt`).
+
 ## 4. Verify
 
 ```bash

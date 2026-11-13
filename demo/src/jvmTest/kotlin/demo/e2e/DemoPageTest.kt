@@ -20,6 +20,9 @@ class DemoPageTest {
         assertTrue(page.title().contains("ktjs-wrapper-template"), "title: ${page.title()}")
         assertEquals("ktjs-wrapper-template demo", page.locator("h1").textContent())
 
+        // The logo is copied in from the site's static files by the `brandAssets` task.
+        assertTrue(page.locator("img.logo").isVisible(), "the demo serves the project logo")
+
         val display = page.locator(".page").evaluate("(node) => getComputedStyle(node).display") as String
         assertTrue(display != "contents", "the stylesheet applies to .page (display = $display)")
     }

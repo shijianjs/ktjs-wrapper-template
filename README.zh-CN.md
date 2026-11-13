@@ -1,5 +1,7 @@
 # ktjs-wrapper-template
 
+<p align="center"><img src="docs/src/jsMain/resources/static/img/ktjs-wrapper-template-logo.png" width="120" alt="ktjs-wrapper-template"></p>
+
 一个立刻能跑的 Kotlin/JS wrapper 项目：一个 Gradle 模块包装
 [`@vaadin/button`](https://www.npmjs.com/package/@vaadin/button)，加上 demo 页面、用
 [ktjs-docusaurus](https://github.com/shijianjs/ktjs-docusaurus) 构建的文档站，以及围绕它们的测试与发布
@@ -66,9 +68,10 @@ Gradle 从这两份文件推导基础版本和 `npm(...)` 依赖：
 ./gradlew kotlinUpgradePackageLock
 ```
 
-`docs` 模块同样是 Kotlin/JS 项目。它的两个版本都写在 `gradle.properties` 里：`ktjs-docusaurus.version`
-是 wrapper klib 的，`ktjs-docusaurus-gradle-plugin.version` 是插件的——那个项目的每个模块各自带
-`-kt.N` 修订号。写 SNAPSHOT 时从 `mavenLocal` 解析，也就是先本地发布一份尚未发版的 wrapper 再构建站点。
+`docs` 模块同样是 Kotlin/JS 项目。三个 ktjs-docusaurus 版本都写在 `gradle.properties` 里：wrapper klib、
+Gradle 插件、以及首页分区用到的工具箱——那个项目的每个模块各自带 `-kt.N` 修订号。写 SNAPSHOT 时从
+`mavenLocal` 解析。工具箱的浏览器那一半不是独立的 Maven 产物，而是 kit klib 里的资源，由
+`extractKitBundle` 解到站点的 `static/ktjs-client/`。
 
 ## 发布
 

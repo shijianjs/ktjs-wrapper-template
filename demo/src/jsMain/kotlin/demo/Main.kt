@@ -5,6 +5,7 @@ import web.cssom.ClassName
 import web.dom.document
 import web.events.EventHandler
 import web.html.HtmlTagName
+import web.html.HTMLElement
 
 private const val PROJECT_NAME = "ktjs-wrapper-template"
 
@@ -19,7 +20,17 @@ private const val PROJECT_NAME = "ktjs-wrapper-template"
 fun main() {
     val root = document.createElement(HtmlTagName.div).apply { className = ClassName("page") }
 
-    val title = document.createElement(HtmlTagName.h1).apply { textContent = "$PROJECT_NAME demo" }
+    // The brand image is copied in from the site's static files by the `brandAssets` task.
+    val logo = document.createElement(HtmlTagName.img).apply {
+        className = ClassName("logo")
+        setAttribute("src", "img/ktjs-wrapper-template-logo.png")
+        setAttribute("alt", "$PROJECT_NAME logo")
+    }
+
+    val header = document.createElement(HtmlTagName.header).apply {
+        className = ClassName("header")
+        append(logo, createHeading())
+    }
 
     val hint = document.createElement(HtmlTagName.p).apply {
         className = ClassName("hint")
@@ -44,6 +55,10 @@ fun main() {
     val toggle = createButton("Disable the other button")
     toggle.onclick = EventHandler { counter.disabled = !counter.disabled }
 
-    root.append(title, hint, counter, toggle, status)
+    root.append(header, hint, counter, toggle, status)
     document.body.append(root)
+}
+
+private fun createHeading(): HTMLElement = document.createElement(HtmlTagName.h1).apply {
+    textContent = "$PROJECT_NAME demo"
 }

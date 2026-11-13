@@ -4,17 +4,45 @@ description: A Kotlin/JS wrapper project that already runs
 hide_table_of_contents: true
 ---
 
-# ktjs-wrapper-template
+import logo from '@site/static/img/ktjs-wrapper-template-logo.png';
 
-A Kotlin/JS wrapper project that already works: one published module wrapping
-[`@vaadin/button`](https://www.npmjs.com/package/@vaadin/button), a demo page, this documentation
-site, and the tests and release pipeline around them. Copy the repository and rename it — that is the
-whole setup, because nothing here is a placeholder waiting to be filled in.
+{/* The `<ktjs-…>` sections come from the ktjs-docusaurus kit: the Gradle plugin publishes its bundle
+    under `static/ktjs-client/`, and `ClientModule.kt` loads it once the page is hydrated. `href`s stay
+    relative so the same page works under both locale prefixes; `logo` is imported so the URL carries
+    whatever `baseUrl` this site is deployed under. */}
 
-- [Introduction](intro) — what is in it and why it runs as-is.
-- [Getting started](guide/getting-started) — build, test, dev servers.
-- [Deriving a project](guide/deriving-a-project) — the rename checklist.
-- [Live demo](https://shijianjs.github.io/ktjs-wrapper-template/demo/) — the page the `demo` module
-  builds.
-- [API reference](https://shijianjs.github.io/ktjs-wrapper-template/api/) — Dokka output for the
-  published modules.
+<ktjs-hero logo-src={logo} title="ktjs-wrapper-template" tagline="A Kotlin/JS wrapper project you can copy">
+
+<ktjs-action kind="primary" href="intro">Get started</ktjs-action>
+
+<ktjs-action kind="secondary" href="https://github.com/shijianjs/ktjs-wrapper-template" icon="simple-icons:github">GitHub</ktjs-action>
+
+</ktjs-hero>
+
+<ktjs-features section-title="Why start here" tinted>
+
+<ktjs-feature icon="lucide:play" title="It runs as it is">Cloning it gives you a project that builds, tests and deploys — no placeholder to fill in, no script to run before the first `./gradlew build`.</ktjs-feature>
+
+<ktjs-feature icon="lucide:package" title="One module per package">A wrapper module maps one npm package to one Kotlin package. Adding the second package means copying one directory, not inventing a layout.</ktjs-feature>
+
+<ktjs-feature icon="lucide:shield-check" title="Types, not dynamic">Upstream `.d.ts` files become `external` declarations checked at compile time; `kotlin-browser`'s `web.*` types keep the surface composable.</ktjs-feature>
+
+<ktjs-feature icon="lucide:flask-conical" title="Tested in a browser">The module's tests run in Chromium against the real custom element, and the demo has its own Playwright suite — both wired into CI.</ktjs-feature>
+
+<ktjs-feature icon="lucide:book-open" title="Docs are Kotlin too">This site is a Kotlin/JS module built by ktjs-docusaurus: typed configuration and sidebars, Markdown pages, English and Chinese.</ktjs-feature>
+
+<ktjs-feature icon="lucide:rocket" title="Pages and release wired">`pagesSite` assembles the documentation, the demo and the API reference; `release.yml` signs and publishes the modules through the Maven Central hub.</ktjs-feature>
+
+</ktjs-features>
+
+<ktjs-next-steps section-title="Where to go next">
+
+<ktjs-step href="intro" title="Introduction">What is in the repository and why it works without any setup.</ktjs-step>
+
+<ktjs-step href="guide/getting-started" title="Getting started">Requirements, the build tasks and the two dev servers.</ktjs-step>
+
+<ktjs-step href="guide/deriving-a-project" title="Deriving a project">The rename checklist for turning this into your own wrapper.</ktjs-step>
+
+<ktjs-step href="https://shijianjs.github.io/ktjs-wrapper-template/api/" title="API reference">Dokka output for the published modules.</ktjs-step>
+
+</ktjs-next-steps>

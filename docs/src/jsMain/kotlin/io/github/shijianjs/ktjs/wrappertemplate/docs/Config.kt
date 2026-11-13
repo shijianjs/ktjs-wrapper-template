@@ -6,6 +6,7 @@ import io.github.shijianjs.ktjs.docusaurus.config.I18nConfig
 import io.github.shijianjs.ktjs.docusaurus.config.I18nLocaleConfig
 import io.github.shijianjs.ktjs.docusaurus.config.PresetConfig
 import io.github.shijianjs.ktjs.docusaurus.config.ReportingSeverities
+import io.github.shijianjs.ktjs.docusaurus.config.StringOrDouble
 import io.github.shijianjs.ktjs.docusaurus.config.StringOrFalse
 import io.github.shijianjs.ktjs.docusaurus.plugins.contentdocs.DocsOptions
 import io.github.shijianjs.ktjs.docusaurus.plugins.themeclassic.StringOrStringArray
@@ -22,6 +23,7 @@ import io.github.shijianjs.ktjs.docusaurus.theme.FooterStyles
 import io.github.shijianjs.ktjs.docusaurus.theme.NavbarItem
 import io.github.shijianjs.ktjs.docusaurus.theme.NavbarItemPositions
 import io.github.shijianjs.ktjs.docusaurus.theme.NavbarItemTypes
+import io.github.shijianjs.ktjs.docusaurus.theme.NavbarLogo
 import io.github.shijianjs.ktjs.docusaurus.theme.PrismThemes
 import io.github.shijianjs.ktjs.docusaurus.theme.SimpleFooter
 import io.github.shijianjs.ktjs.docusaurus.theme.ThemeConfig
@@ -64,9 +66,13 @@ fun docusaurusConfig(): Config = unsafeJso {
     tagline = "A Kotlin/JS wrapper project you can copy"
     url = SITE_URL
     baseUrl = SITE_BASE_URL
+    favicon = "img/ktjs-wrapper-template-logo.png"
     trailingSlash = true
     // A broken internal link fails the build instead of shipping a 404 to the Pages site.
     onBrokenLinks = ReportingSeverities.`throw`
+
+    // The kit's element bundle is loaded from here after every route change; see `ClientModule.kt`.
+    clientModules = arrayOf("./client-module.mjs")
 
     // English is the source language; every page under `src/jsMain/resources` has a translation in
     // `i18n/zh-Hans/`, in the directory owned by the plugin that serves it.
@@ -113,6 +119,13 @@ fun docusaurusConfig(): Config = unsafeJso {
     themeConfig = unsafeJso<ThemeConfig> {
         navbar = unsafeJso {
             title = "ktjs-wrapper-template"
+            // The same file the favicon uses, so the navbar logo costs no extra download; `alt` is
+            // left out because the title next to it already names the site.
+            logo = unsafeJso<NavbarLogo> {
+                src = "img/ktjs-wrapper-template-logo.png"
+                width = StringOrDouble(32.0)
+                height = StringOrDouble(32.0)
+            }
             hideOnScroll = true
             items = arrayOf(
                 unsafeJso<NavbarItem> {

@@ -33,6 +33,17 @@ body {
     padding: 2rem 1.5rem 4rem;
 }
 
+.header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo {
+    width: 56px;
+    height: 56px;
+}
+
 .hint,
 .status {
     color: var(--page-muted);

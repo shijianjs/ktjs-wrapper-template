@@ -2,6 +2,17 @@ plugins {
     kotlin("multiplatform")
 }
 
+// The brand image lives with the site's static files and is copied in here, so the demo and the
+// documentation cannot drift apart. `srcDir(task)` only contributes the directory, not the
+// dependency, hence the explicit wiring below.
+val brandAssets = tasks.register<Copy>("brandAssets") {
+    from(rootProject.file("docs/src/jsMain/resources/static/img")) {
+        // Keep the same `img/` layout the site uses, so both pages reference `img/<logo>.png`.
+        into("img")
+    }
+    into(layout.buildDirectory.dir("generated/brand"))
+}
+
 kotlin {
     js {
         useEsModules()
@@ -16,6 +27,9 @@ kotlin {
     jvm()
 
     sourceSets {
+        jsMain {
+            resources.srcDir(brandAssets)
+        }
         jsMain.dependencies {
             implementation("org.jetbrains.kotlin-wrappers:kotlin-browser:2026.11.1")
             // The published modules the demo demonstrates, one line each.
@@ -31,6 +45,12 @@ kotlin {
             runtimeOnly("org.junit.platform:junit-platform-launcher:6.1.3")
         }
     }
+}
+
+// `srcDir(task)` contributes the directory but not the task dependency; resource processing is what
+// reads that directory, so the edge belongs there.
+tasks.named("jsProcessResources") {
+    dependsOn(brandAssets)
 }
 
 // ---------------------------------------------------------------------------------------------
