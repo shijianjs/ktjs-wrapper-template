@@ -1,7 +1,19 @@
 {
   "name": "ktjs-wrapper-template-npm-versions",
   "private": true,
-  "description": "Source of truth for npm package versions used by the Kotlin/JS build. Read by build.gradle.kts and updated by Dependabot.",
+  "description": "Source of truth for npm package versions used by the Kotlin/JS build. Read by build.gradle.kts and updated by Dependabot. The browserslist entry is found by walking up from the generated site directory: without it Babel has no targets, downlevels async/await to a regenerator state machine, and `@docusaurus/theme-mermaid`'s `if (__DOCUSAURUS_MERMAID_LAYOUT_ELK_ENABLED__)` guard stops being dead code — the build then fails on the optional `@mermaid-js/layout-elk` peer that is deliberately not installed.",
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "dependencies": {
     "@docusaurus/theme-mermaid": "3.10.2",
     "@vaadin/button": "25.3.5"
