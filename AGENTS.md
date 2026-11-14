@@ -553,6 +553,11 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
   `@docusaurus/theme-mermaid` 里 `if (__DOCUSAURUS_MERMAID_LAYOUT_ELK_ENABLED__)` 这个守卫就不再是死代码，
   webpack 会去解析那个**故意没装**的可选 peer `@mermaid-js/layout-elk`，`docusaurusBuild` 停在
   `Can't resolve '@mermaid-js/layout-elk'`（派生项目加 mermaid 主题时踩过）。顺带产物也不再降级到 ES5。
+- mermaid 的节点 tooltip 还需要 `d3-transition`：`clientModules` 里那条 `../../node_modules/d3-transition`
+  是**副作用导入**，它给 d3 selection 挂上 `transition()`。mermaid 只是通过 `d3` 的 re-export 碰到它，而 `d3`
+  声明了 `sideEffects: false`，webpack 会把该模块摇掉，于是鼠标移到流程图节点上抛
+  `tooltipElem.transition is not a function`（派生项目踩过）。路径相对**站点目录**
+  （`<root>/build/js/docusaurus/<模块>`），这个布局由 Gradle 插件固定。
 - 端到端测试是 `demo` 的 JVM 目标里的 Playwright JUnit 5 套件（`demo/src/jvmTest/kotlin/demo/e2e`）：
   Playwright 驱动打包后的 `demo/build/dist/js/productionExecutable`，`DemoServer` 用 Hutool 的
   `SimpleServer` 在测试 JVM 内提供静态文件。运行 `./gradlew :demo:e2eTest`；它不在 `check` 里，CI 在
