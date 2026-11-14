@@ -27,3 +27,15 @@ The API reference under `/api/` is Dokka output for the published modules — th
 - [Getting started](guide/getting-started.md) — build it, test it, run the dev server.
 - [Deriving a project](guide/deriving-a-project.md) — the rename checklist for turning this into your
   own wrapper.
+
+## How the pieces fit together
+
+```mermaid
+flowchart TB
+  T["ktjs-wrapper-template<br/>(copy me)"] --> C["core: the sample wrapper"]
+  T --> D["demo: a runnable page"]
+  T --> G["docs: this site"]
+  C --> V["@vaadin/button"]
+  G --> B["ktjs-docusaurus<br/>Gradle plugin"]
+  B --> P["GitHub Pages"]
+```

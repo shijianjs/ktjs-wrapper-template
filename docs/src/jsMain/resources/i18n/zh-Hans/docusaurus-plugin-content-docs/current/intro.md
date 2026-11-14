@@ -24,3 +24,15 @@ title: 简介
 
 - [快速开始](guide/getting-started.md)：构建、测试、开发服务器。
 - [派生新项目](guide/deriving-a-project.md)：改名的清单。
+
+## 各部分如何协作
+
+```mermaid
+flowchart TB
+  T["ktjs-wrapper-template<br/>（复制我）"] --> C["core：示例 wrapper"]
+  T --> D["demo：可运行的页面"]
+  T --> G["docs：本站"]
+  C --> V["@vaadin/button"]
+  G --> B["ktjs-docusaurus<br/>Gradle 插件"]
+  B --> P["GitHub Pages"]
+```

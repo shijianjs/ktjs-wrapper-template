@@ -4,6 +4,8 @@ import io.github.shijianjs.ktjs.docusaurus.config.Config
 import io.github.shijianjs.ktjs.docusaurus.config.Directions
 import io.github.shijianjs.ktjs.docusaurus.config.I18nConfig
 import io.github.shijianjs.ktjs.docusaurus.config.I18nLocaleConfig
+import io.github.shijianjs.ktjs.docusaurus.config.MarkdownConfig
+import io.github.shijianjs.ktjs.docusaurus.config.PluginConfig
 import io.github.shijianjs.ktjs.docusaurus.config.PresetConfig
 import io.github.shijianjs.ktjs.docusaurus.config.ReportingSeverities
 import io.github.shijianjs.ktjs.docusaurus.config.StringOrDouble
@@ -20,6 +22,9 @@ import io.github.shijianjs.ktjs.docusaurus.sidebars.SidebarsConfig
 import io.github.shijianjs.ktjs.docusaurus.theme.ColorModes
 import io.github.shijianjs.ktjs.docusaurus.theme.Footer
 import io.github.shijianjs.ktjs.docusaurus.theme.FooterStyles
+import io.github.shijianjs.ktjs.docusaurus.theme.MermaidTheme
+import io.github.shijianjs.ktjs.docusaurus.theme.MermaidThemeByColorMode
+import io.github.shijianjs.ktjs.docusaurus.theme.MermaidThemeConfig
 import io.github.shijianjs.ktjs.docusaurus.theme.NavbarItem
 import io.github.shijianjs.ktjs.docusaurus.theme.NavbarItemPositions
 import io.github.shijianjs.ktjs.docusaurus.theme.NavbarItemTypes
@@ -71,6 +76,13 @@ fun docusaurusConfig(): Config = unsafeJso {
     // A broken internal link fails the build instead of shipping a 404 to the Pages site.
     onBrokenLinks = ReportingSeverities.`throw`
 
+    // ```mermaid fences render as diagrams. Two halves, and both are needed: this flag is what
+    // compiles the fence into a `<Mermaid>` element, and the theme registered below is what provides
+    // that element in the browser.
+    markdown = unsafeJso<MarkdownConfig> {
+        mermaid = true
+    }
+
     // The kit's element bundle is loaded from here after every route change; see `ClientModule.kt`.
     clientModules = arrayOf("./client-module.mjs")
 
@@ -92,6 +104,13 @@ fun docusaurusConfig(): Config = unsafeJso {
             }
         }.unsafeCast<Record<JsAny, I18nLocaleConfig>>()
     }
+
+    // Two themes: `@docusaurus/theme-mermaid` provides `@theme/Mermaid`, the element a
+    // ```mermaid fence compiles into. Its palette and look are site configuration
+    // (`themeConfig.mermaid` below).
+    themes = arrayOf<PluginConfig?>(
+        PluginConfig("@docusaurus/theme-mermaid"),
+    )
 
     presets = arrayOf<PresetConfig?>(
         classicPreset(
@@ -170,6 +189,24 @@ fun docusaurusConfig(): Config = unsafeJso {
             darkTheme = PrismThemes.dracula
             additionalLanguages = arrayOf("bash", "kotlin", "json")
         }
+        // Both names are mermaid's own and both come from its `redux` family: a white card with a
+        // dark outline in light mode, its dark counterpart in dark mode. `MermaidThemes` lists the
+        // five older names (default / neutral / dark / forest / base), so these two enter through the
+        // factory that wraps a value mermaid defines.
+        //
+        // `options` is spread into `mermaid.initialize` as `{startOnLoad: false, ...options, theme}`,
+        // the theme above winning over anything set here. Mermaid *ignores* a value it does not
+        // recognise rather than reporting it, so the palette and `look: 'neo'` are verified in a
+        // browser, never by a build.
+        mermaid = unsafeJso<MermaidThemeConfig> {
+            theme = unsafeJso<MermaidThemeByColorMode> {
+                light = MermaidTheme("redux-color")
+                dark = MermaidTheme("redux-dark-color")
+            }
+            options = unsafeJso<MermaidOptions> {
+                look = "neo"
+            }
+        }
         footer = Footer(
             unsafeJso<SimpleFooter> {
                 style = FooterStyles.dark
@@ -223,6 +260,15 @@ private external interface LocaleConfigs {
 
     @JsName("zh-Hans")
     var zhHans: I18nLocaleConfig?
+}
+
+/**
+ * The one key this site sets in mermaid's `Config`; upstream type is the whole `mermaidAPI.Config`,
+ * which the wrapper leaves opaque. Declared rather than built from a raw object literal so the key
+ * name and the value are checked here — add a property per key this site needs.
+ */
+private external interface MermaidOptions {
+    var look: String
 }
 
 /** The sidebar record: one property per sidebar id. */

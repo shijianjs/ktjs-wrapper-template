@@ -3,6 +3,7 @@
   "private": true,
   "description": "Source of truth for npm package versions used by the Kotlin/JS build. Read by build.gradle.kts and updated by Dependabot.",
   "dependencies": {
+    "@docusaurus/theme-mermaid": "3.10.2",
     "@vaadin/button": "25.3.5"
   }
 }

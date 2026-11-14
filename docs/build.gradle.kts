@@ -4,12 +4,9 @@ plugins {
 }
 
 /**
- * The project's documentation site: a Kotlin/JS module whose configuration and sidebars are Kotlin
- * and whose pages are Markdown under `src/jsMain/resources`.
- *
- * `./gradlew :docs:docusaurusBuild` assembles the site and runs the Docusaurus CLI on it;
- * `pagesSite` copies the result to the GitHub Pages root, which is why the `baseUrl` in `Config.kt`
- * points there.
+ * `docs` is this project's own documentation site: Markdown lives in `src/jsMain/resources`,
+ * configuration is Kotlin, and `./gradlew :docs:docusaurusBuild` turns both into the static site
+ * GitHub Pages serves.
  *
  * The module is loaded by Node (Docusaurus imports `docusaurus.config.mjs` from its bundle), so it
  * must not define custom elements: those read `HTMLElement` at module load. The landing page's
@@ -35,6 +32,13 @@ kotlin {
             implementation(
                 "io.github.shijianjs:ktjs-docusaurus:${providers.gradleProperty("ktjs-docusaurus.version").get()}",
             )
+
+            // The mermaid theme is resolved *by name* from the generated configuration, so npm has
+            // to install it next to the site: no Kotlin code imports it, and the wrapper does not
+            // bring it along. Version is the upstream `@docusaurus/*` lockstep anchor (3.10.2),
+            // also pinned in the root `package.json` so Dependabot keeps it in step with the
+            // wrapper's Docusaurus version.
+            implementation(npm("@docusaurus/theme-mermaid", "3.10.2"))
         }
     }
 }
