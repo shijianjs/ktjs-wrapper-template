@@ -408,6 +408,23 @@ bundle，而消费方打包时本来就会摇树，保留 public API 没有额�
 `init.d` 下的 Kotlin DSL 脚本做独立编译，`beforeSettings` 等隐式接收者解析不了，会报一堆
 `Unresolved reference`（命令行构建却正常）。
 
+npm 包下载（`kotlinNpmInstall`、`:docs:docusaurusStart` 之前那次安装）同理走本机用户配置
+`~/.npmrc` 的 `registry=https://registry.npmmirror.com/`，不写进仓库：仓库里没有 `.npmrc`，CI 只用官方源。
+**已锁定的条目不会因此变脏**——npm 只把 `resolved` 里指向 `registry.npmjs.org` 的主机换成当前 registry 去下载，
+写回锁文件仍是原值（npm 12 默认 `replace-registry-host=npmjs`），所以 `kotlin-js-store/package-lock.json`
+和 `kotlinStorePackageLock` 的校验都不受影响。**例外是锁里没有的包**：它们按当前 registry 解析，写进锁就是
+`registry.npmmirror.com`，CI 用官方源重装后立刻报 `Lock file was changed`。所以刷新锁一律先切回官方源：
+
+```powershell
+$env:npm_config_registry = 'https://registry.npmjs.org/'   # 只对本会话生效，覆盖 ~/.npmrc
+./gradlew --stop                                            # daemon 在启动时抓环境变量，必须重启
+./gradlew kotlinUpgradePackageLock --rerun-tasks
+```
+
+两条别再踩的细节：`replace-registry-host` 保持默认的 `npmjs`，改成 `always` 就真会把镜像地址写进锁文件；
+registry 是全局的，将来真要 `npm publish` 某个包时得显式 `--registry=https://registry.npmjs.org/`
+（npmmirror 是只读镜像，发布会被拒）。
+
 `kotlin-wrappers` 同步滞后，且有时只有 POM 没有 klib，而 Gradle 一旦在某个仓库找到元数据就不会回退到
 下一个仓库。`settings.gradle.kts` 因此用 `exclusiveContent` 把 `org.jetbrains.kotlin-wrappers` 和
 `kotlin-js-plain-objects` 固定到 Maven Central；新增 wrapper 依赖时如遇 `Could not find ... .klib`，把
@@ -442,6 +459,12 @@ bundle，而消费方打包时本来就会摇树，保留 public API 没有额�
 - 提升 `wrapper-revisions.properties` 的修订号也会改生成的 workspace 包版本，必须同时跑
   `./gradlew kotlinUpgradePackageLock` 并提交 `kotlin-js-store/package-lock.json`，否则 CI 在
   `:kotlinStorePackageLock` 报 `Lock file was changed`。
+- **新增 npm 依赖**同样要刷锁：`npm(...)` 声明、根 `package.json`、以及给站点加主题插件
+  （`@docusaurus/theme-mermaid` 这类）都会改变依赖图。只跑 `kotlinNpmInstall` 不算数——它不写回
+  `kotlin-js-store`，所以提交里没有锁文件更新，`./gradlew build` 就在 `:kotlinStorePackageLock` 失败
+  （2026-11 给站点加 mermaid 主题时漏了这一步，锁里少了 115 个包，`@docusaurus/theme-mermaid`、
+  `@mermaid-js/parser`、chevrotain、d3 类型等）。修法：在官方源下跑 `kotlinUpgradePackageLock`
+  （见「仓库与本地镜像」），确认 `git diff` 里只有新增条目（不应出现版本变化）再一起提交。
 
 ## 发布到 Maven Central
 
