@@ -6,6 +6,7 @@ import io.github.shijianjs.ktjs.docusaurus.config.I18nConfig
 import io.github.shijianjs.ktjs.docusaurus.config.I18nLocaleConfig
 import io.github.shijianjs.ktjs.docusaurus.config.MarkdownConfig
 import io.github.shijianjs.ktjs.docusaurus.config.PluginConfig
+import io.github.shijianjs.ktjs.docusaurus.config.PluginOptions
 import io.github.shijianjs.ktjs.docusaurus.config.PresetConfig
 import io.github.shijianjs.ktjs.docusaurus.config.ReportingSeverities
 import io.github.shijianjs.ktjs.docusaurus.config.StringOrDouble
@@ -108,8 +109,14 @@ fun docusaurusConfig(): Config = unsafeJso {
     // Two themes: `@docusaurus/theme-mermaid` provides `@theme/Mermaid`, the element a
     // ```mermaid fence compiles into. Its palette and look are site configuration
     // (`themeConfig.mermaid` below).
+    //
+    // The empty options object is not decoration: the wrapper this site builds against
+    // (`3.10.2-kt.2`) turns `PluginConfig(name)` into a one-element array, and Docusaurus' schema
+    // accepts only a bare string or an exactly two-element `[name, options]` tuple — the
+    // one-argument form fails at config load with "Bad Docusaurus theme value themes[0]". Once a
+    // wrapper carrying the fix is released the bare name is enough again.
     themes = arrayOf<PluginConfig?>(
-        PluginConfig("@docusaurus/theme-mermaid"),
+        PluginConfig("@docusaurus/theme-mermaid", unsafeJso<PluginOptions> { }),
     )
 
     presets = arrayOf<PresetConfig?>(
