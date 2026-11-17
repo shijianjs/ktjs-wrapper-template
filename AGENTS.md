@@ -625,6 +625,15 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 - **可疑的启动失败先换 daemon**：`./gradlew --stop` 后重跑。长期复用的 daemon 会带上一轮构建的坏状态
   （自己拉起的 node 子进程句柄、仍被它认为锁定的输出目录），曾出现只有兜底文案、重启电脑就自愈的情况——
   先排除这一项，再查代码与配置。
+- **dev 产物也要验收，别只看 e2e 的 production bundle**：先 `./gradlew :demo:jsBrowserDevelopmentDistribution`，
+  再 `./gradlew :demo:e2eTest -Ddemo.dist=<repo>/demo/build/dist/js/developmentExecutable`（`e2eTest` 的
+  `demo.dist` 系统属性可覆盖）。development 与 production 是两次独立编译，只在 dev 模式出现的问题
+  （下面的混淆名不一致就是）在 production 套件里完全看不到。
+- **跨模块构造器的默认参数不要用函数字面量**（2026-11 在 Kotlin 2.4.21 实测）：development 与 production
+  给同一个构造器算出不同的混淆名，库那侧只编译一次、导出 `new_…_imfsn8_k$`，development executable 却
+  调用 `Entry.new_…_28n0j_k$`，`jsBrowserDevelopmentRun` 报
+  `Uncaught TypeError: …new_…_k$ is not a function`（页面白屏）。规矩：公开构造器的默认值只用常量
+  （`null` / `0` / `""`），函数类型参数要么必填、要么默认 `null` 由调用方 `?.invoke`。
 
 **docs**
 
