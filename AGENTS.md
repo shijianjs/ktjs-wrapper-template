@@ -381,8 +381,8 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
 - **自己写自定义元素时必须设 `js target = "es2015"`**（`js { useEsModules(); compilerOptions { target =
   "es2015" } }`）：默认 ES5 发射把类写成 `function X() { HTMLElement.call(this) }`，DOM 构造函数只接受
   `new`，浏览器抛 `Please use the 'new' operator`，元素能 define 但永不升级。产物自查
-  `grep 'HTMLElement.call'` 应为 0。模板自身 demo 只挂上游组件、不定义元素，因此没有开这一项；一旦 demo
-  里出现自己的 `CustomElementAdapter` 子类就补上。
+  `grep 'HTMLElement.call'` 应为 0。模板的 demo 就是这么写的（见下面「demo / docs 的对齐清单」），这一项
+  已经开在 `demo/build.gradle.kts` 里；派生项目只要还有自定义元素就不能删。
 - 深色底上的控件要显式给常态颜色：浏览器 UA 的 `buttontext` 是黑色，深色主题下按钮文字与边框会看不见。
   `color` / `backgroundColor` / `borderColor` 的基础值与 `:hover` 一起留在 sheet（内联会压掉 `:hover`）。
 
@@ -599,6 +599,12 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 
 - 页面用标记实例化自定义元素，组件是标准 Web Component：每个组件一个 `CustomElementAdapter` 子类、一个
   文件、一个 shadow root、一份自己的 sheet；`document.adoptedStyleSheets` 保持 0 份。
+- **demo 自己定义元素，不能只把上游组件挂到 `body` 上**：页面本身是 `<ktjs-demo-page>`，header、区块外壳、
+  各区块都是自己的元素（模板现成的：`<ktjs-demo-header>` / `<ktjs-section>` / `<ktjs-button-demo>` /
+  `<ktjs-api>` / `<ktjs-conventions>`）。上游自定义元素照常被包在这些 shadow 树里，样式只作用在它的宿主上，
+  不往它的 shadow 里伸手。
+- 页面代码用 `ktjs-dom-kit`：版本写在 `gradle.properties` 的 `ktjs-dom-kit.version`（Maven Central 普通依赖），
+  `demo/build.gradle.kts` 的 `jsMain` 引用它；标签走 `TagName<T>`、样式走 `cssSheet` / `attachStyledShadow`。
 - 结构按归属分层：页面元素、`theme/`（调色板与跨文件 class 常量）、`lang/`（文案）、`header/`，以及一对多的
   `section/` + `section/sections/`；外壳不做基类、不与使用者同级。
 - 节点类型安全：`TagName<T>.createElement { … }`，不出现 `createElement("ul")` 这类魔法字符串标签；样式走
@@ -606,6 +612,8 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 - 静态样式进 sheet + 语义 class（`ClassName` 常量，单文件用的写 `private val`，两个以上文件才共享），
   两态用 class 切换；内联只给运行时值。
 - 组合走列表 + 契约：`blocks: List<PageBlock>` + `forEach`，不逐个 append、不逐个调用。
+- 中英切换由组件自己声明：`PageBlock.applyTranslation(translation)` 是接口方法，文案集中在
+  `lang/Translation.kt`（每个语言一个实例，含数字的用 `(Int) -> String`），页面只负责「什么时候切」。
 - 自己定义元素就必须 `js compilerOptions { target = "es2015" }`，产物 `grep 'HTMLElement.call'` 为 0。
 - 验收：`:demo:e2eTest`（Playwright，指向 `demo/build/dist/js/productionExecutable`）+ 浏览器里实测结构 /
   计算样式 / `[style]` 节点数 / console 报错。只看「构建成功」不算验证过页面。

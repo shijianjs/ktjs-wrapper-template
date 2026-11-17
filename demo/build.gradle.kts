@@ -17,6 +17,14 @@ kotlin {
     js {
         useEsModules()
 
+        // The demo's own components are real custom elements (`class X extends HTMLElement`). At the
+        // default ES5 target Kotlin emits `function X() { HTMLElement.call(this) }`, and a DOM
+        // constructor may only be invoked with `new` — the browser throws "Please use the 'new'
+        // operator" and the tag never upgrades. ES2015 is the first target that can express a class.
+        compilerOptions {
+            target = "es2015"
+        }
+
         // The demo is a standalone page, so the JS target needs an executable webpack bundle.
         binaries.executable()
         browser()
@@ -32,7 +40,14 @@ kotlin {
         }
         jsMain.dependencies {
             implementation("org.jetbrains.kotlin-wrappers:kotlin-browser:2026.11.1")
-            // The published modules the demo demonstrates, one line each.
+            // The page's own components are built with dom-kit: `TagName<T>.createElement`, the typed
+            // `cssSheet` DSL, and the custom-element adapter that `attachStyledShadow(RESET, own)` hangs
+            // off. Detekt forbids mixing `web.*` with `org.w3c.dom.*` / `kotlinx.browser.*`.
+            implementation(
+                "io.github.shijianjs:ktjs-dom-kit:" +
+                    providers.gradleProperty("ktjs-dom-kit.version").get(),
+            )
+            // The published module the demo demonstrates, one line per module.
             implementation(project(":ktjs-wrapper-template-core"))
         }
 
