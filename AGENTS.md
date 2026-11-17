@@ -320,26 +320,71 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
   `matchMedia` 等外部对象上的，必须在 `disconnectedCallback()` 里移除，注册用幂等标志
   （元素移动或框架重挂载会再次触发 `connectedCallback()`）。
 
+### 页面组合：槽位外壳 + 契约接口
+
+- **重复的「标题 + 提示 + 内容盒」做成一个容器组件**，而不是使用者继承的基类：外壳自己的 shadow root 是
+  `h2` + `p` + `<slot>`，`:host` 承担区块间距；使用者把正文节点 append 到外壳上、经 slot 投影，正文仍留在
+  使用者自己的 shadow 树里、吃使用者的 sheet。使用者不 adopt 外壳的 sheet，外壳也不 adopt 使用者的。
+- **页面元素只做组合**：持有一个 `blocks` 列表，每个组件自己实现「能挂载 + 能被换语言」的契约接口
+  （`val node get() = this as HTMLElement` + `applyTranslation`），挂载与换语言各一句 `forEach`。不要退回
+  「每个字段各写一次 append + 换语言各写一次调用」，也不要「元素列表 + lambda 列表」两套清单。
+- **名称要能自解释**：负责切换文案的东西叫 `Translation` / `I18n`，不要叫 `Copy`（UI 代码里它首先意味着
+  复制）。
+
+### 目录按层级：一对多分两级
+
+包比文件高一层，门槛也更高：只有存在明确归属关系（父子级：一个类型与它的各种实现；一对多：一张表与写它
+时的各种语法糖）才建子包，包名回答「它属于谁」。外壳组件与它的多个使用者就是一对多——`page/section/` 放
+「一」、`page/section/sections/` 放「多」，不许平铺在同一级；平铺丢掉的正是归属信息，包名就只剩「跟谁一起
+改过」。没有第二个使用者的词汇（`theme/`、`lang/`、`header/`）保持一层就够。
+
 ### 组件用 class，但不建通用组件基类
 
 一个组件一个类，自带字段、构造时组装、自己的 setter；不做 `create()` / `apply()` 之类的模板方法抽象，
 那会把状态驱动刷新重新引进来。非元素的小部件（折叠控件、卡片等）同样是 class；函数式导出只留给真正的
 纯工具。
 
-### 样式默认私有，外提要有理由
+### 样式：静态进组件 sheet + class，内联只留给运行时值
 
-样式先落在它自己身上：能用一条普通声明表达的写内联，内联表达不了的（`:hover`、`::before`、`@media`）写成这个组件自己的小段 CSS。不要顺手提取共享样式。全都共享，共享就不再共享：每段样式都允许多个组件依赖，改动影响面就无法判断；反过来全是私有，真正共享的那份也找不出来。私有样式一旦长在共享文件里，就只敢加不敢改。共享本身是一份承诺（reset、主题 token、父容器布局），改它等于同时改所有组件，说不清这份承诺就不该共享。
+静态规则（盒模型、间距、字体、颜色、圆角、边框、网格，以及 `:hover` / `:focus-visible`、`::before` /
+`::after`、`@media`、后代选择器）写进**该组件自己的一份 `CSSStyleSheet` + 语义 class**，节点只带 class。
+原因是样式与 DOM 实例一对多：同一段 `padding` / 边框 / 字号会出现在几十个同类节点上，内联等于每个节点各背
+一份 `style` 字符串（N 份文本、N 次解析、改一处要改 N 处代码），走 class 则一份规则被全部同类节点共用。
 
-### 默认 Shadow DOM
+内联是**明确的性能妥协**，只留给「值在运行时才定得下来、而且会频繁变」的少数属性（拖拽位置、进度宽度、
+用户挑的颜色、第三方库要求直接写 `style` 的尺寸），并且只写那一个属性、不要顺手把整块样式一起内联。两态 /
+多态（选中、可用、成功失败）是有限枚举，用 class 切换，不要内联颜色；连续值优先走
+`el.style.setProperty('--progress', '42%')`，让 sheet 里那条规则保持静态。
 
-- 组件默认渲染进 `shadow root`（`mode: 'open'`），样式通过 `adoptedStyleSheets` 或 shadow 内样式注入，
-  避免与宿主页面互相污染。
-- 主题靠 CSS 自定义属性继承穿过 shadow 边界；这些变量必须声明在文档的 `:root` / `[data-theme]` 上。
-  组件内部不要写 `[data-theme]` 选择器，也不要依赖宿主 class。
-- 只有继承属性穿得过边界：`box-sizing` 不是继承属性，shadow 内必须在自己的作用域重新声明
-  `box-sizing` 重置，不要依赖宿主的 `* { box-sizing: border-box }`。
-- 万不得已才退回 light DOM（仅当必须直接复用宿主的 CSS 规则时），类名加项目前缀，新增例外要在评审里
-  说明依赖了宿主的哪条规则。混合形态（部分 shadow、部分 light）要划清边界并记录原因。
+`adoptedStyleSheets` 是正常机制：**一个组件类一份 sheet，该组件的所有实例 adopt 同一份**（模块级常量或惰性
+建一次），不要每个实例建一个 `<style>` 节点或新 `CSSStyleSheet`。
+
+就近原则：规则写在渲染它的那段代码旁边，一个组件一份 sheet，改一处不用读两处；不为了「整齐」搬进公共样式
+表，也不生成几百行的集中式 CSS 常量。**class 常量同样就近**：只在一个文件里用的写成该文件的 `private val`，
+两个以上文件共用的才进共享常量文件（如 `theme/Classes.kt`）；调用点一律 `classList.add(X_CLASS)`，不要加
+`addClass("row")` 这类把字符串透传一层的包装。
+
+共享要有理由：只有两个以上组件**必须一起变**、并且说得清那份承诺（reset、主题 token、父容器布局）时才提取。
+全都共享，共享就不再共享；私有样式一旦长在共享文件里，就只敢加不敢改。
+
+### 默认 Shadow DOM，作用域不外溢
+
+- 组件默认渲染进 `shadow root`（`mode: 'open'`），样式由**这个组件自己的 sheet** 注入：Kotlin/JS 用
+  `attachStyledShadow(RESET, 自己的 sheet …)`，TS 用 `shadow.adoptedStyleSheets = [base, own]`。
+  `document.adoptedStyleSheets` 保持 **0 份**——把组件 sheet 挂到 document 上，作用域其实还是整页，
+  和「没做隔离」一样。唯一跨组件共享的是那份 reset（`:host { display: block }` + `box-sizing`）。
+- 主题靠 CSS 自定义属性继承穿过 shadow 边界；这些变量声明在文档的 `:root` / `[data-theme]` 上，组件内部
+  不要写 `[data-theme]` 选择器，也不要依赖宿主 class。
+- 只有继承属性穿得过边界：`box-sizing` 不是继承属性，shadow 内必须自己重新声明 reset。
+- 万不得已才退回 light DOM（仅当必须直接复用宿主的 CSS 规则时），类名加项目前缀，新增例外要在评审里说明
+  依赖了宿主的哪条规则；混合形态（部分 shadow、部分 light）要划清边界并记录原因。
+- **自己写自定义元素时必须设 `js target = "es2015"`**（`js { useEsModules(); compilerOptions { target =
+  "es2015" } }`）：默认 ES5 发射把类写成 `function X() { HTMLElement.call(this) }`，DOM 构造函数只接受
+  `new`，浏览器抛 `Please use the 'new' operator`，元素能 define 但永不升级。产物自查
+  `grep 'HTMLElement.call'` 应为 0。模板自身 demo 只挂上游组件、不定义元素，因此没有开这一项；一旦 demo
+  里出现自己的 `CustomElementAdapter` 子类就补上。
+- 深色底上的控件要显式给常态颜色：浏览器 UA 的 `buttontext` 是黑色，深色主题下按钮文字与边框会看不见。
+  `color` / `backgroundColor` / `borderColor` 的基础值与 `:hover` 一起留在 sheet（内联会压掉 `:hover`）。
 
 ### 无 document 环境安全
 
@@ -545,6 +590,40 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 修改根 `build.gradle.kts` 的 POM 配置。
 
 ## 演示页面与 GitHub Pages
+
+### demo / docs 的对齐清单
+
+这套要求是在实际项目里一轮轮提出来、又一轮轮返工才收齐的，新增或改造演示页与文档站前逐条过一遍：
+
+**demo**
+
+- 页面用标记实例化自定义元素，组件是标准 Web Component：每个组件一个 `CustomElementAdapter` 子类、一个
+  文件、一个 shadow root、一份自己的 sheet；`document.adoptedStyleSheets` 保持 0 份。
+- 结构按归属分层：页面元素、`theme/`（调色板与跨文件 class 常量）、`lang/`（文案）、`header/`，以及一对多的
+  `section/` + `section/sections/`；外壳不做基类、不与使用者同级。
+- 节点类型安全：`TagName<T>.createElement { … }`，不出现 `createElement("ul")` 这类魔法字符串标签；样式走
+  类型化 CSS DSL / 组件 sheet，不拼 `style` 字符串。
+- 静态样式进 sheet + 语义 class（`ClassName` 常量，单文件用的写 `private val`，两个以上文件才共享），
+  两态用 class 切换；内联只给运行时值。
+- 组合走列表 + 契约：`blocks: List<PageBlock>` + `forEach`，不逐个 append、不逐个调用。
+- 自己定义元素就必须 `js compilerOptions { target = "es2015" }`，产物 `grep 'HTMLElement.call'` 为 0。
+- 验收：`:demo:e2eTest`（Playwright，指向 `demo/build/dist/js/productionExecutable`）+ 浏览器里实测结构 /
+  计算样式 / `[style]` 节点数 / console 报错。只看「构建成功」不算验证过页面。
+
+**docs**
+
+- **模板的 docs 构建配置是调优过的，不要先砍再用**：`kitBundle` + `extractKitBundle`（从 klib 解出
+  `ktjs-client/**`）、`clientModuleFunction`、`browserBundle` / `browserBundleFiles`、`Config.kt` 里的
+  `clientModules`（含 `d3-transition` 副作用导入）、`themes`（`@docusaurus/theme-mermaid`）、
+  `markdown.mermaid` / `themeConfig.mermaid` 都有实际用途（首页元素、mermaid 渲染与节点 tooltip、`JsAny`
+  的 opt-in）。跑不了或有特殊需求时才加 / 改配置，删之前先确认它服务的那条需求是否也不做了。
+- 首页用工具箱（`<ktjs-hero>` / `<ktjs-features>` / `<ktjs-next-steps>`），不手搓等价组件；站点侧只加载
+  kit 的 browser bundle，不在 `docs` 的 Kotlin 依赖图里带浏览器代码。
+- 中英双语：每个页面 en 与 zh-Hans 各一份，文案改动两边一起改；文档为主，导航能跳到 demo 与 API 文档。
+- 站点配置常量（`baseUrl`、demo / api 两个跳转地址）只在 `Config.kt` 顶部一处，不散落到页面里。
+- Pages 用 `gh` 打开（Source = GitHub Actions / `build_type=workflow`），不要手动点设置；触发方式按项目需求：
+  模板 `pages.yml` 只有 `workflow_dispatch`（内容值得上线时 `gh workflow run pages.yml`），希望 push 即发布
+  的派生项目改成 `push: branches: [main]`。`pagesSite` 组装后文档在根、demo 在 `demo/`、API 在 `api/`。
 
 - `demo` 只消费公共 API，不发布、也不进入 Dokka。根 `build.gradle.kts` 的发布与 Dokka 配置按
   `ktjs-wrapper-template-` 前缀过滤子模块，新增非发布模块时沿用该约定。
