@@ -34,6 +34,27 @@ are part of CI as separate steps.
 Docusaurus watches the site directory, so Markdown edits reload; Kotlin changes need
 `./gradlew :docs:docusaurusSite` first, because the site imports the compiled module.
 
+### When the demo dev server fails
+
+`jsBrowserRun` runs webpack as an external process. When that process exits with a non-zero code, the
+Kotlin Gradle plugin can only report `Error occurred. See log for details.`: whatever webpack printed
+was forwarded as progress lines, and the default console erases the progress area when the task ends.
+Rerun with a plain console to keep them:
+
+```bash
+./gradlew :demo:jsBrowserRun --console=plain
+```
+
+A port that is already taken is not one of those reasons — the dev server walks from 8080 to 8081 and
+onwards, so a dev server left running does not make the task fail. If the plain console stays empty
+too, run the command Gradle runs and read its stderr directly; the generated package is under
+`build/js/packages/<module>-demo`:
+
+```bash
+cd build/js/packages/<module>-demo
+node ../../node_modules/webpack/bin/webpack.js serve --config webpack.config.js
+```
+
 ## Where things live
 
 | Path | Contents |

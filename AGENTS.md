@@ -617,6 +617,9 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 - 自己定义元素就必须 `js compilerOptions { target = "es2015" }`，产物 `grep 'HTMLElement.call'` 为 0。
 - 验收：`:demo:e2eTest`（Playwright，指向 `demo/build/dist/js/productionExecutable`）+ 浏览器里实测结构 /
   计算样式 / `[style]` 节点数 / console 报错。只看「构建成功」不算验证过页面。
+- `jsBrowserRun` / `jsBrowserDevelopmentRun` 失败时控制台只有 `Error occurred. See log for details.`：这句是
+  KGP 兜底文案，webpack 进程的 stdout/stderr 被当 progress 行转发、默认控制台在任务结束时擦掉。查原因用
+  `--console=plain` 重跑；端口 8080 被占会自动退到 8081，不是这类失败的成因。
 
 **docs**
 

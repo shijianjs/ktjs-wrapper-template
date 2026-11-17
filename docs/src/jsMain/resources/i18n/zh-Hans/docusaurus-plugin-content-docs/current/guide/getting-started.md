@@ -33,6 +33,25 @@ sidebar_position: 1
 Docusaurus 监听站点目录，改 Markdown 即时刷新；改 Kotlin 要先 `./gradlew :docs:docusaurusSite`，因为
 站点 import 的是编译产物。
 
+### demo 开发服务器失败时
+
+`jsBrowserRun` 把 webpack 当外部进程跑。这个进程非 0 退出时，Kotlin Gradle 插件只能报
+`Error occurred. See log for details.`：webpack 的输出被当作 progress 行转发，而默认控制台在任务结束时
+会把进度区擦掉。换成 plain 控制台重跑才能留住它：
+
+```bash
+./gradlew :demo:jsBrowserRun --console=plain
+```
+
+端口被占不是这类失败的原因——开发服务器会从 8080 一路退到 8081 及以后，已经有一个在跑也不会让任务失败。
+如果 plain 控制台同样没有内容，就直接跑 Gradle 跑的那条命令、读它的 stderr（生成的包在
+`build/js/packages/<module>-demo`）：
+
+```bash
+cd build/js/packages/<module>-demo
+node ../../node_modules/webpack/bin/webpack.js serve --config webpack.config.js
+```
+
 ## 目录结构
 
 | 路径 | 内容 |
