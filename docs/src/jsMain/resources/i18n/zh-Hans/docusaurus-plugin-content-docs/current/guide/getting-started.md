@@ -52,6 +52,10 @@ cd build/js/packages/<module>-demo
 node ../../node_modules/webpack/bin/webpack.js serve --config webpack.config.js
 ```
 
+遇到可疑的启动问题（这个任务、或浏览器测试）先换一个干净的 daemon 再谈其他：`./gradlew --stop`，然后
+重跑。长期复用的 daemon 会带着上一次构建的坏状态（自己拉起的 node 子进程句柄、仍然认为被占用的输出目录），
+这个症状就是重启电脑后自愈的。
+
 ## 目录结构
 
 | 路径 | 内容 |

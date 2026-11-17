@@ -620,6 +620,9 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 - `jsBrowserRun` / `jsBrowserDevelopmentRun` 失败时控制台只有 `Error occurred. See log for details.`：这句是
   KGP 兜底文案，webpack 进程的 stdout/stderr 被当 progress 行转发、默认控制台在任务结束时擦掉。查原因用
   `--console=plain` 重跑；端口 8080 被占会自动退到 8081，不是这类失败的成因。
+- **可疑的启动失败先换 daemon**：`./gradlew --stop` 后重跑。长期复用的 daemon 会带上一轮构建的坏状态
+  （自己拉起的 node 子进程句柄、仍被它认为锁定的输出目录），曾出现只有兜底文案、重启电脑就自愈的情况——
+  先排除这一项，再查代码与配置。
 
 **docs**
 

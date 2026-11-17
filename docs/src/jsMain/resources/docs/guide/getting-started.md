@@ -55,6 +55,11 @@ cd build/js/packages/<module>-demo
 node ../../node_modules/webpack/bin/webpack.js serve --config webpack.config.js
 ```
 
+For any suspicious startup failure — this task or a browser test — try a fresh daemon before anything
+else: `./gradlew --stop`, then rerun. A long-lived daemon carries stale state from the previous build
+(handles of node children it spawned, an output directory it still considers locked), and a reboot
+cured exactly this symptom once.
+
 ## Where things live
 
 | Path | Contents |
