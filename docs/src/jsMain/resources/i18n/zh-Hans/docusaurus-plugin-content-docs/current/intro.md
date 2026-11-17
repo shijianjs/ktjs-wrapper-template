@@ -14,7 +14,7 @@ title: 简介
 | 部分 | 作用 |
 | --- | --- |
 | `ktjs-wrapper-template-core` | 示例模块：`@vaadin/button` 25.3.5。一个 npm 包、一个 Gradle 模块、一个 Kotlin 包；加下一个包时照它复制 |
-| `demo` | 用 wrapper 造两个 `<vaadin-button>` 的页面，发布在 `/demo/` |
+| `demo` | 演示页，自己定义一组自定义元素（`<ktjs-demo-page>`、`<ktjs-section>` 与每块一个），用 `ktjs-dom-kit` 写，展示被包起来的 `<vaadin-button>`；发布在 `/demo/` |
 | `docs` | 本站：Kotlin 配置 + Markdown 页面，由 [ktjs-docusaurus](https://github.com/shijianjs/ktjs-docusaurus) 的 Gradle 插件构建 |
 | 其余 | 版本清单集中在一个 `package.json`、每模块独立的 `-kt.N` 修订号、Detekt、Playwright 浏览器测试、经 hub 发布到 Maven Central、Pages 工作流 |
 

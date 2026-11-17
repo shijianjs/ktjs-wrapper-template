@@ -26,7 +26,7 @@ the compiler and the tests tell you what is left.
 | module `build.gradle.kts` | `npmVersions.getValue("<package>")` |
 | `src/jsMain/kotlin/...` | the wrapper declarations, following the `ktjs-type-mapping` skill |
 | `src/jsTest/kotlin/...` | tests derived from the upstream tests, adapted to the pinned version |
-| `demo/src/jsMain/kotlin/demo/Main.kt` | a page that actually exercises the wrapper |
+| `demo/src/jsMain/kotlin/.../demo/` | the demo page: its own custom elements (`page/`, `page/header/`, `page/lang/`, `page/theme/`, `page/section/sections/`) that exercise the wrapper; the package name follows the project's |
 
 ## 3. The site
 
@@ -38,8 +38,8 @@ pages under `docs/src/jsMain/resources` are content only; the translations mirro
 The landing page uses the kit's `<ktjs-hero>` / `<ktjs-features>` / `<ktjs-next-steps>` sections. Keep
 `ClientModule.kt` and the `browserBundle` block in `docs/build.gradle.kts` as they are; only the copy
 changes. The logo has one source, `docs/src/jsMain/resources/static/img/`, and the demo's
-`brandAssets` task copies it into its own resources — replace that file and update the three places
-that name it (`Config.kt`, `demo/src/jsMain/resources/index.html`, `demo/.../Main.kt`).
+`brandAssets` task copies it into its own resources — replace that file and update the places that
+name it (`Config.kt`, `demo/src/jsMain/resources/index.html`, `demo/.../page/header/HeaderBar.kt`).
 
 ## 4. Verify
 

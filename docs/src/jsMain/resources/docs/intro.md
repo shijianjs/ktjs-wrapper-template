@@ -15,7 +15,7 @@ it gives you something that runs on the first `./gradlew build`.
 | Part | Role |
 | --- | --- |
 | `ktjs-wrapper-template-core` | the sample wrapper: `@vaadin/button` 25.3.5. One npm package, one Gradle module, one Kotlin package — copy it for the next package |
-| `demo` | a page that creates two `<vaadin-button>` elements through the wrapper; published under `/demo/` |
+| `demo` | the demo page, written as its own custom elements (`<ktjs-demo-page>`, `<ktjs-section>` and one per section) with `ktjs-dom-kit`, showing the wrapped `<vaadin-button>`; published under `/demo/` |
 | `docs` | this site: Kotlin configuration, Markdown pages, built by the [ktjs-docusaurus](https://github.com/shijianjs/ktjs-docusaurus) Gradle plugin |
 | the rest | npm versions in one `package.json`, per-module `-kt.N` revisions, Detekt, Playwright browser tests, Maven Central release through the hub, Pages workflow |
 
