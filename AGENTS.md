@@ -607,8 +607,11 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
   不往它的 shadow 里伸手。
 - 页面代码用 `ktjs-dom-kit`：版本写在 `gradle.properties` 的 `ktjs-dom-kit.version`（Maven Central 普通依赖），
   `demo/build.gradle.kts` 的 `jsMain` 引用它；标签走 `TagName<T>`、样式走 `cssSheet` / `attachStyledShadow`。
-- 结构按归属分层：页面元素、`theme/`（调色板与跨文件 class 常量）、`lang/`（文案）、`header/`，以及一对多的
-  `section/` + `section/sections/`；外壳不做基类、不与使用者同级。
+- 结构按归属分层：`shell/`（外壳：容器 + 它自己那份 sheet 与 `ClassName` 常量）、`page/`（页面框架、区块、
+  页面的 sheet 与常量）、`nav/`（站点目录与路由）、`i18n/`（语言、文案、翻译容器、绑定器）；一对多做
+  `section/` + `section/sections/`，外壳不做基类、不与使用者同级。**样式表与常量跟着 owner 走**：不要合成
+  一份 `Sheets.kt` / `Classes.kt`，也不要建 `style/` 这种按文件类型分的包——只把真正跨 owner 的
+  reset 与调色板留在根包。
 - 节点类型安全：`TagName<T>.createElement { … }`，不出现 `createElement("ul")` 这类魔法字符串标签；样式走
   类型化 CSS DSL / 组件 sheet，不拼 `style` 字符串。
 - 静态样式进 sheet + 语义 class（`ClassName` 常量，单文件用的写 `private val`，两个以上文件才共享），
