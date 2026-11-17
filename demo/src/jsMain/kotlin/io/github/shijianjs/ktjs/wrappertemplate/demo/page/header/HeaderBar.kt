@@ -25,7 +25,6 @@ import web.cssom.Cursor
 import web.cssom.Display
 import web.cssom.FlexWrap
 import web.cssom.FontWeight
-import web.cssom.JustifyContent
 import web.cssom.LineStyle
 import web.cssom.Margin
 import web.cssom.Padding
