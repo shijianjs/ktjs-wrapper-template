@@ -26,8 +26,8 @@ sidebar_position: 1
 ## 开发
 
 ```bash
-./gradlew :docs:docusaurusStart    # 文档站的开发服务器
-./gradlew :demo:jsBrowserRun       # demo 页面的开发服务器
+./gradlew :docs:docusaurusStart              # 文档站的开发服务器
+./gradlew :demo:jsBrowserDevelopmentRun      # demo 页面的开发服务器
 ```
 
 Docusaurus 监听站点目录，改 Markdown 即时刷新；改 Kotlin 要先 `./gradlew :docs:docusaurusSite`，因为
@@ -35,12 +35,12 @@ Docusaurus 监听站点目录，改 Markdown 即时刷新；改 Kotlin 要先 `.
 
 ### demo 开发服务器失败时
 
-`jsBrowserRun` 把 webpack 当外部进程跑。这个进程非 0 退出时，Kotlin Gradle 插件只能报
+`jsBrowserDevelopmentRun` 把 webpack 当外部进程跑。这个进程非 0 退出时，Kotlin Gradle 插件只能报
 `Error occurred. See log for details.`：webpack 的输出被当作 progress 行转发，而默认控制台在任务结束时
 会把进度区擦掉。换成 plain 控制台重跑才能留住它：
 
 ```bash
-./gradlew :demo:jsBrowserRun --console=plain
+./gradlew :demo:jsBrowserDevelopmentRun --console=plain
 ```
 
 端口被占不是这类失败的原因——开发服务器会从 8080 一路退到 8081 及以后，已经有一个在跑也不会让任务失败。

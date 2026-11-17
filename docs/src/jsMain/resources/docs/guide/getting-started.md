@@ -27,8 +27,8 @@ are part of CI as separate steps.
 ## Develop
 
 ```bash
-./gradlew :docs:docusaurusStart    # dev server for this site
-./gradlew :demo:jsBrowserRun       # dev server for the demo page
+./gradlew :docs:docusaurusStart              # dev server for this site
+./gradlew :demo:jsBrowserDevelopmentRun      # dev server for the demo page
 ```
 
 Docusaurus watches the site directory, so Markdown edits reload; Kotlin changes need
@@ -36,13 +36,13 @@ Docusaurus watches the site directory, so Markdown edits reload; Kotlin changes 
 
 ### When the demo dev server fails
 
-`jsBrowserRun` runs webpack as an external process. When that process exits with a non-zero code, the
-Kotlin Gradle plugin can only report `Error occurred. See log for details.`: whatever webpack printed
-was forwarded as progress lines, and the default console erases the progress area when the task ends.
-Rerun with a plain console to keep them:
+`jsBrowserDevelopmentRun` runs webpack as an external process. When that process exits with a
+non-zero code, the Kotlin Gradle plugin can only report `Error occurred. See log for details.`:
+whatever webpack printed was forwarded as progress lines, and the default console erases the progress
+area when the task ends. Rerun with a plain console to keep them:
 
 ```bash
-./gradlew :demo:jsBrowserRun --console=plain
+./gradlew :demo:jsBrowserDevelopmentRun --console=plain
 ```
 
 A port that is already taken is not one of those reasons — the dev server walks from 8080 to 8081 and
