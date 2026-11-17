@@ -35,7 +35,9 @@ wrapper。**本仓库自己就是模板，也是一个能立刻跑的项目**：
   `ktjs-client/ktjs-docusaurus-kit-browser.js`，`docs/build.gradle.kts` 用 `extractKitBundle` 从 klib
   解出来交给插件放到 `static/ktjs-client/`，再由 `ClientModule.kt` 在 hydrate 之后按 locale 的
   `baseUrl` 加载。Node 会读配置文件，所以这个 bundle 绝不能进 `docs` 的 Kotlin 依赖图。
-  Logo 只有一份（`docs/src/jsMain/resources/static/img/`），demo 用 `brandAssets` 任务拷进自己的资源。
+  Logo 只有一份（`docs/src/jsMain/resources/static/img/`），demo 用 `brandAssets` 任务拷进自己的资源；
+  浏览器标签页的 favicon 也用它（`<link rel="icon" type="image/png" href="img/<name>-logo.png">`），
+  demo 与文档站指向同一张 PNG，不另做 ico。
 
 Kotlin 包名统一以账号的 GitHub Pages 域名倒写为前缀：`io.github.<owner>.ktjs.<name>`。不要用裸根包
 （`vaadin`、`echarts`、`iconify` 之类），否则项目间以及与其他库容易在同一 classpath 上撞包。新增模块时
