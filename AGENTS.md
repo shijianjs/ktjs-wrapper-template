@@ -619,12 +619,14 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 - Vaadin 的 `theme` 只有实现上游 `ThemePropertyMixin` 的组件才渲染，所以用 wrapper 挂在标记接口上的
   `addTheme` / `setTheme` / `removeTheme` / `hasTheme`，**不要**给 `HTMLElement` 挂 `withTheme` 这类扩展——
   那样每个元素都凭空多出它并不渲染的能力。同理：能力属于哪个上游接口，就挂在那条接口上。
-- **别人的元素用 `Attribute` + 函数读写，不用 `attr`**：`attr` 是给自己组件用的（注册、回调、默认值）；
-  wrapper 出来的 `external` 类（`createButton()` → `ButtonElement`）在自己不拥有的元素上，声明
-  `Attribute<T>(name, codec)` 后用 `readAttribute` / `writeAttribute`。**没有 `by` 版本**：`external` 类上只能
-  写扩展属性，而 Kotlin 不委托扩展属性——真想要命名属性就在调用点自己写 get/set。词列表（`theme`、
-  `aria-describedby`、`data-tags`）用 `TokenListAttributeCodec` + `element.tokens(attribute)` 的
-  `add` / `remove` / `toggle` / `clear`，它每次直接读写属性，没有额外缓存。
+- **别人的元素用「绑定元素的属性对象」，不用 `attr`**：`attr` 是给自己组件用的（注册、回调、默认值）；
+  wrapper 出来的 `external` 类改成给扩展属性，交出一个操作对象：`val ButtonElement.labelText:
+  Attribute<String> get() = attribute("aria-label")`，然后 `button.labelText.value = …` / `.present` /
+  `.raw` / `.clear()`。内置类型有 `attribute` / `booleanAttribute` / `intAttribute` / `doubleAttribute`
+  四个工厂（调用点不写类型参数），自定义 codec 用 `attribute(name, codec)`。**没有 `by` 版本**：`external`
+  类上只能写扩展属性，而 Kotlin 不委托扩展属性——这正是把它做成对象的原因。词列表（`theme`、
+  `aria-describedby`、`data-tags`）用 `element.tokens(name)` 拿 `TokenListAttribute` 的
+  `add` / `remove` / `toggle` / `clear` / `value`，每次直接读写属性，没有额外缓存。
 - 静态样式进 sheet + 语义 class（`ClassName` 常量，单文件用的写 `private val`，两个以上文件才共享），
   两态用 class 切换；内联只给运行时值。
 - 组合走列表 + 契约：`blocks: List<PageBlock>` + `forEach`，不逐个 append、不逐个调用。
