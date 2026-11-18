@@ -149,9 +149,11 @@ private val SHEET: CSSStyleSheet = cssSheet {          // ktjs-dom-kit：emotion
 
 收益不看行数，看**还剩多少 CSS 文本要手写**：同一段规则手写是 455 个字符的 CSS，上面一条声明也不用
 手写，只剩名字（自定义属性名）。几条实测约束：① 伪类用 `Pseudos` + `Pseudos.hover { }` / `pseudos(…)`
-（`TagName` + `HtmlTagName` 那套形态，64 个常量、每个带 `&`）；短写法来自 `context(RuleBuilder<T>)` +
-`operator Pseudo.invoke`（Kotlin 2.2+ context parameters，调用点要 import `…dom.css.dsl.invoke`），和官方
-`hover { }` 一样但带 `&`、能组合；`hover {}` 糖自带的选择器是 `:hover`、缺 `&`，会被
+（`TagName` + `HtmlTagName` 那套形态，64 个常量、每个就是伪类文本本身，如 `Pseudos.hover` = `:hover`）；
+短写法来自 `context(RuleBuilder<T>)` + `operator Pseudo.invoke`（Kotlin 2.2+ context parameters，调用点要
+import `…dom.css.dsl.invoke`），和官方 `hover { }` 一样、能组合，`&` 由这个作用域补（逗号分开的每一支各补
+一个，否则后几支会被 stylis 当成后代）；`&` 不在值里，所以同一个常量也能当选择器零件
+（`pseudo(Pseudos.not, className(HIDDEN))`）。`hover {}` 糖自带的选择器是 `:hover`、没有 `&`，会被
 stylis 当成**后代**选择器，而且就算上游 JetBrains/kotlin-wrappers#2933 修好也写不出组合态，别等它；
 ② 过渡属性名用 `PropertyName.borderColor`（`PropertyName<T> : Ident`、
 `IdentType` 里包含 `TransitionProperty`），**不需要 cast**；③ at-rule 别写 `"@media …"` 字符串，官方有
