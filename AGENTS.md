@@ -666,6 +666,10 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
   的 opt-in）。跑不了或有特殊需求时才加 / 改配置，删之前先确认它服务的那条需求是否也不做了。
 - 首页用工具箱（`<ktjs-hero>` / `<ktjs-features>` / `<ktjs-next-steps>`），不手搓等价组件；站点侧只加载
   kit 的 browser bundle，不在 `docs` 的 Kotlin 依赖图里带浏览器代码。
+- **`src/css/custom.css` 里的 `html { overflow-x: clip; }` 不能漏**：三个色带用
+  `margin-inline: calc(50% - 50vw)` 拉出内容列，`100vw` 含桌面滚动条槽宽，比可视区宽几像素；少了这条，
+  首页底部就有一条横贯整页的横向滚动条。用 `clip` 不用 `hidden`（`hidden` 会把 `<html>` 变成滚动容器，
+  sticky 导航与桌面 TOC 一起失效）。这个毛病在派生站点上反复出现，复制站点时连着这行一起拷。
 - 中英双语：每个页面 en 与 zh-Hans 各一份，文案改动两边一起改；文档为主，导航能跳到 demo 与 API 文档。
 - **能画就画**：结构、依赖方向、数据流、状态机、调用时序、页面组合，只要能说清就用 ```` ```mermaid ````
   画出来（主题已装好，`markdown.mermaid` 也开着），别只堆段落与表格。图与正文同语言（英文页英文节点、

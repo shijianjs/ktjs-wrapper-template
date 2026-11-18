@@ -7,3 +7,14 @@
 [data-theme='dark'] {
     --ifm-color-primary: #6cb6ff;
 }
+
+/*
+ * 首页的满宽色带（`<ktjs-hero>` / `<ktjs-features>` / `<ktjs-next-steps>`）用
+ * `margin-inline: calc(50% - 50vw)` 把自己拉出内容列，而 `100vw` 含桌面滚动条的宽度，比可视区宽几像素——
+ * 少了下面这条，整页底部就会多一条横向滚动条。
+ *
+ * 用 `overflow-x: clip` 而不是 `hidden`：`hidden` 会造出一个滚动容器，sticky 导航与右侧 TOC 一起失效。
+ */
+html {
+    overflow-x: clip;
+}
