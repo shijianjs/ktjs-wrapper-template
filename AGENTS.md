@@ -667,6 +667,10 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 - 首页用工具箱（`<ktjs-hero>` / `<ktjs-features>` / `<ktjs-next-steps>`），不手搓等价组件；站点侧只加载
   kit 的 browser bundle，不在 `docs` 的 Kotlin 依赖图里带浏览器代码。
 - 中英双语：每个页面 en 与 zh-Hans 各一份，文案改动两边一起改；文档为主，导航能跳到 demo 与 API 文档。
+- **能画就画**：结构、依赖方向、数据流、状态机、调用时序、页面组合，只要能说清就用 ```` ```mermaid ````
+  画出来（主题已装好，`markdown.mermaid` 也开着），别只堆段落与表格。图与正文同语言（英文页英文节点、
+  中文页中文节点），图里不放参数值这类实现细节。表格留给「并列取值 / 选项对照」。改完在浏览器里看一遍
+  —— 图是运行时渲染的，构建通过不代表画得出来。
 - 站点配置常量（`baseUrl`、demo / api 两个跳转地址）只在 `Config.kt` 顶部一处，不散落到页面里。
 - Pages 用 `gh` 打开（Source = GitHub Actions / `build_type=workflow`），不要手动点设置；触发方式按项目需求：
   模板 `pages.yml` 只有 `workflow_dispatch`（内容值得上线时 `gh workflow run pages.yml`），希望 push 即发布
