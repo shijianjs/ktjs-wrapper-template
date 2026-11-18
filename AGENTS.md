@@ -616,6 +616,9 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
   类型化 CSS DSL / 组件 sheet，不拼 `style` 字符串。**不要再包一层 `element(tag, className, vararg children)`**：
   `createElement` 的 lambda 已经是元素自己的接收者（`textContent` / `classList` / `append` 直接写），包一层只会
   把调用方逼到 `.apply { … }`；只有按语义反复创建的东西（`paragraph()`、`codeText()`）才建命名 helper。
+- Vaadin 的 `theme` 只有实现上游 `ThemePropertyMixin` 的组件才渲染，所以用 wrapper 挂在标记接口上的
+  `addTheme` / `setTheme` / `removeTheme` / `hasTheme`，**不要**给 `HTMLElement` 挂 `withTheme` 这类扩展——
+  那样每个元素都凭空多出它并不渲染的能力。同理：能力属于哪个上游接口，就挂在那条接口上。
 - 静态样式进 sheet + 语义 class（`ClassName` 常量，单文件用的写 `private val`，两个以上文件才共享），
   两态用 class 切换；内联只给运行时值。
 - 组合走列表 + 契约：`blocks: List<PageBlock>` + `forEach`，不逐个 append、不逐个调用。
