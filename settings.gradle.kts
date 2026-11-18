@@ -33,6 +33,8 @@ dependencyResolutionManagement {
             filter {
                 includeGroup("org.jetbrains.kotlin-wrappers")
                 includeModule("org.jetbrains.kotlin", "kotlin-js-plain-objects")
+                // the stdlib half of the same trap: its JS klib only exists on Central
+                includeGroup("org.jetbrains.kotlin")
             }
         }
         mavenCentral()
