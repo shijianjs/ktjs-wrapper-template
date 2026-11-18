@@ -637,6 +637,9 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
 - 中英切换由组件自己声明：`PageBlock.applyTranslation(translation)` 是接口方法，文案集中在
   `lang/Translation.kt`（每个语言一个实例，含数字的用 `(Int) -> String`），页面只负责「什么时候切」。
 - 自己定义元素就必须 `js compilerOptions { target = "es2015" }`，产物 `grep 'HTMLElement.call'` 为 0。
+- **示意板这类「要在固定范围里动」的盒子给显式宽度**：`vaadin-vertical-layout` 是内容尺寸
+  （子项 `align-items: flex-start`），`align-self: stretch` 撑不开，舞台按内容宽度算只有几十像素，
+  动画立刻跑出 `overflow: hidden` 的裁剪区。尺寸不确定时用固定宽（如 `640.px`），别指望父布局。
 - 验收：`:demo:e2eTest`（Playwright，指向 `demo/build/dist/js/productionExecutable`）+ 浏览器里实测结构 /
   计算样式 / `[style]` 节点数 / console 报错。只看「构建成功」不算验证过页面。
 - `jsBrowserDevelopmentRun` 失败时控制台只有 `Error occurred. See log for details.`：这句是 KGP 兜底文案，
