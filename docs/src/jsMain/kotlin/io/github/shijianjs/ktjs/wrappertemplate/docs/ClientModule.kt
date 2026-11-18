@@ -1,5 +1,6 @@
 package io.github.shijianjs.ktjs.wrappertemplate.docs
 
+import io.github.shijianjs.ktjs.docusaurus.kit.TocToggle
 import kotlin.js.JsExport
 
 /**
@@ -15,6 +16,9 @@ import kotlin.js.JsExport
  * hydration pass.
  */
 private val isBrowser: Boolean = js("typeof window !== 'undefined'")
+
+/** The desktop table of contents' collapse toggle; the kit owns the element, the site places it. */
+private val tocToggle = TocToggle()
 
 private val loadBrowserBundle: (String) -> Unit = js(
     """
@@ -42,5 +46,7 @@ private val loadBrowserBundle: (String) -> Unit = js(
 @JsExport
 fun onRouteDidUpdate(siteBaseUrl: String) {
     if (!isBrowser) return
+    tocToggle.install()
+    tocToggle.refresh()
     loadBrowserBundle(siteBaseUrl + "ktjs-client/index.mjs")
 }

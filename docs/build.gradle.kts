@@ -33,6 +33,12 @@ kotlin {
                 "io.github.shijianjs:ktjs-docusaurus:${providers.gradleProperty("ktjs-docusaurus.version").get()}",
             )
 
+            // The Node-safe half of the kit: the landing page tags are markup, but `TocToggle`
+            // (the desktop table of contents' collapse button) is code the client module calls.
+            implementation(
+                "io.github.shijianjs:ktjs-docusaurus-kit:${providers.gradleProperty("ktjs-docusaurus-kit.version").get()}",
+            )
+
             // The mermaid theme is resolved *by name* from the generated configuration, so npm has
             // to install it next to the site: no Kotlin code imports it, and the wrapper does not
             // bring it along. Version is the upstream `@docusaurus/*` lockstep anchor (3.10.2),
