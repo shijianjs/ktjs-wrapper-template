@@ -625,8 +625,12 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
   `.raw` / `.clear()`。内置类型有 `attribute` / `booleanAttribute` / `intAttribute` / `doubleAttribute`
   四个工厂（调用点不写类型参数），自定义 codec 用 `attribute(name, codec)`。**没有 `by` 版本**：`external`
   类上只能写扩展属性，而 Kotlin 不委托扩展属性——这正是把它做成对象的原因。词列表（`theme`、
-  `aria-describedby`、`data-tags`）用 `element.tokens(name)` 拿 `TokenListAttribute` 的
+  `aria-describedby`、`data-tags`）用 `element.tokenListAttribute(name)` 拿 `TokenListAttribute` 的
   `add` / `remove` / `toggle` / `clear` / `value`，每次直接读写属性，没有额外缓存。
+- **属性名字符串只写一处**：在 demo 里与 `page` 并列开一个包（如 `wrapper/`），声明
+  `val ThemePropertyMixin.themeAttr: TokenListAttribute get() =
+  unsafeCast<HTMLElement>().tokenListAttribute("theme")`，页面里统一调 `themeAttr`；不要在每个调用点
+  重复 `tokenListAttribute("theme")`——`external` 类上的属性名字符串编译器查不出错，重复一次就多一个错处。
 - 静态样式进 sheet + 语义 class（`ClassName` 常量，单文件用的写 `private val`，两个以上文件才共享），
   两态用 class 切换；内联只给运行时值。
 - 组合走列表 + 契约：`blocks: List<PageBlock>` + `forEach`，不逐个 append、不逐个调用。
