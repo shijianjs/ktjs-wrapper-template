@@ -391,6 +391,12 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
 两个以上文件共用的才进共享常量文件（如 `theme/Classes.kt`）；调用点一律 `classList.add(X_CLASS)`，不要加
 `addClass("row")` 这类把字符串透传一层的包装。
 
+**`ClassName` 对象本身就是共享物**：它是「一个类」，不是「一个名字的副本」。静态声明一次，然后让调用点
+（`element.className = X`、`classList.add(X)`）与 `cssSheet` 的规则键引用**同一个对象**——两边指向同一个
+实例，改名与删除都只有一处。因此字符串形式的类名只允许留在 JS API 边界（把对象拼成 `"$X"` 交给要求字符串的
+上游数据结构），其余位置一律传对象；helper 的参数类型也是 `ClassName?`，不要为「方便」再开一个 `String`
+重载。
+
 共享要有理由：只有两个以上组件**必须一起变**、并且说得清那份承诺（reset、主题 token、父容器布局）时才提取。
 全都共享，共享就不再共享；私有样式一旦长在共享文件里，就只敢加不敢改。
 
@@ -411,6 +417,12 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
 
 一个属性值一旦用字符串手写，就等于放弃编译器对这一处的检查；`flex = js("(1)")`、`textDecorationLine =
 js("(none)")` 这类写法都是查得不够，不是库不够。
+
+选择器侧同理，而且有一条必须记住的 CSS 事实：**`::part(name)` 是宿主的伪元素，不能跟在组合子后面**。
+`host.external > ::part(label)` 是合法 CSS 但永远匹配不到东西，症状是「规则写了、样式没生效」；正确形态是把
+part 加进同一个 compound（`compound(tag(x), className(y), pseudo(pseudoElement("part"), ident("label")))`
+→ `x.y::part(label)`）。验的时候直接 dump 页面 `adoptedStyleSheets` 的 `cssRules` 比截图可靠：选择器文本对不对
+一眼就能看见。
 
 ### 默认 Shadow DOM，作用域不外溢
 
