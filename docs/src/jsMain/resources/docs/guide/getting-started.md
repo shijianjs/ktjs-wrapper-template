@@ -23,6 +23,16 @@ sidebar_position: 1
 
 `build` does not run the demo's end-to-end suite or assemble the Pages site: both need a browser and
 are part of CI as separate steps.
+```mermaid
+flowchart LR
+  CORE["wrapper module<br/>JS glue + browser tests"] --> SITE["pagesSite"]
+  DEMO["demo module<br/>kit shell + pages"] -->|"as /demo/"| SITE
+  DOCS["docs module<br/>Docusaurus content"] -->|"as /"| SITE
+  DOKKA["Dokka"] -->|"as /api/"| SITE
+```
+
+`pagesSite` is the only task that puts the three products side by side; `build` stops at compiling,
+testing and the wrapper's own browser suite.
 
 ## Develop
 

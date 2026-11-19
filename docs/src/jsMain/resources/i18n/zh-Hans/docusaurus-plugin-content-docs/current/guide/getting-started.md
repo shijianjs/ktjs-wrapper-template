@@ -22,6 +22,15 @@ sidebar_position: 1
 ```
 
 `build` 不含 demo 的端到端套件，也不组装 Pages 站点：两者都要浏览器，在 CI 里是单独的步骤。
+```mermaid
+flowchart LR
+  CORE["wrapper 模块<br/>JS 胶水 + 浏览器测试"] --> SITE["pagesSite"]
+  DEMO["demo 模块<br/>工具箱外壳 + 页面"] -->|"落在 /demo/"| SITE
+  DOCS["docs 模块<br/>Docusaurus 内容"] -->|"落在 /"| SITE
+  DOKKA["Dokka"] -->|"落在 /api/"| SITE
+```
+
+`pagesSite` 是唯一把三件产物摆到一起的任务；`build` 只到编译、测试和 wrapper 自己的浏览器套件为止。
 
 ## 开发
 

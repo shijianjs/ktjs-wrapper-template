@@ -7,6 +7,17 @@ sidebar_position: 2
 Everything below assumes you start from a copy of this repository (GitHub's **Use this template**, or
 `git clone` and delete `.git`). There is no placeholder script to run: the workflow is a rename, and
 the compiler and the tests tell you what is left.
+```mermaid
+flowchart LR
+  TPL["this repository<br/>Use this template"] --> ID["1. identity<br/>rootProject.name, module dir, publishedPrefix, package"]
+  ID --> PKG["2. the wrapped package<br/>package.json, npmVersions, declarations, tests"]
+  PKG --> SITE["3. the site<br/>Config.kt, docs content, translations, logo"]
+  SITE --> VER["4. verify<br/>kotlinUpgradePackageLock → build → pagesSite"]
+  VER --> PUB["optional: release workflow → Maven Central"]
+```
+
+Each step is a rename the compiler and the tests check; the order only decides how many errors you
+see at once.
 
 ## 1. Identity
 
@@ -26,7 +37,7 @@ the compiler and the tests tell you what is left.
 | module `build.gradle.kts` | `npmVersions.getValue("<package>")` |
 | `src/jsMain/kotlin/...` | the wrapper declarations, following the `ktjs-type-mapping` skill |
 | `src/jsTest/kotlin/...` | tests derived from the upstream tests, adapted to the pinned version |
-| `demo/src/jsMain/kotlin/.../demo/` | the demo page: its own custom elements (`page/`, `page/header/`, `page/lang/`, `page/theme/`, `page/section/sections/`) that exercise the wrapper; the package name follows the project's |
+| `demo/src/jsMain/kotlin/.../demo/` | the demo site: `Main.kt` mounts the kit layout, `SiteMenu.kt` and `SiteTexts.kt` hold the navigation and the copy, `page/` holds the pages that exercise the wrapper; the package name follows the project's |
 
 ## 3. The site
 
@@ -39,7 +50,7 @@ The landing page uses the kit's `<ktjs-hero>` / `<ktjs-features>` / `<ktjs-next-
 `ClientModule.kt` and the `browserBundle` block in `docs/build.gradle.kts` as they are; only the copy
 changes. The logo has one source, `docs/src/jsMain/resources/static/img/`, and the demo's
 `brandAssets` task copies it into its own resources — replace that file and update the places that
-name it (`Config.kt`, `demo/src/jsMain/resources/index.html`, `demo/.../page/header/HeaderBar.kt`).
+name it (`Config.kt`, `demo/src/jsMain/resources/index.html`, `demo/.../demo/SiteTexts.kt`).
 
 ## 4. Verify
 
