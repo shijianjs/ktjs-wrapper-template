@@ -6,12 +6,17 @@
     <meta name="description" content="Demo of ktjs-wrapper-template: a Kotlin/JS wrapper around @vaadin/button, written as custom elements with shadow-scoped styles.">
     <title>ktjs-wrapper-template demo</title>
     <link rel="icon" href="img/ktjs-wrapper-template-logo.png">
+    <!-- Lumo's design tokens and the utility classes the shell uses; copied from the npm workspace. -->
+    <link rel="stylesheet" href="lumo.css">
+    <link rel="stylesheet" href="utility.css">
     <script src="demo.js" defer></script>
 </head>
-<body style="margin: 0; background: #ffffff">
+<body>
+<!--
+  The shell is named here, not created by the script: `main` defines the tag and mounts the site into
+  the element the browser built, so there is exactly one `<ktjs-demo-layout>` on the page.
+-->
+<ktjs-demo-layout id="demo"></ktjs-demo-layout>
 <noscript>This demo is written in Kotlin/JS and needs JavaScript enabled.</noscript>
-<!-- The page is a custom element like everything inside it; `class="page"` is the hook the browser
-     suite asserts on. It upgrades when demo.js defines the tag, and renders itself into its shadow. -->
-<ktjs-demo-page id="demo" class="page"></ktjs-demo-page>
 </body>
 </html>

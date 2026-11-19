@@ -2,12 +2,28 @@ plugins {
     kotlin("multiplatform")
 }
 
+// The demo shell (`ktjs-demo-kit`) is built from Vaadin's published wrapper, which ships the JavaScript
+// side of `@vaadin/vaadin-lumo-styles` but not the CSS: that is a page-level `<link>`, taken from the
+// npm workspace the Kotlin/JS plugin installs at the root.
+val lumoStyles = rootProject.layout.buildDirectory.dir("js/node_modules/@vaadin/vaadin-lumo-styles/dist")
+
+val copyLumoStyles = tasks.register<Copy>("copyLumoStyles") {
+    description = "Copies the pre-built Lumo stylesheet into the demo resources."
+    dependsOn(":kotlinNpmInstall")
+    from(lumoStyles) {
+        include("lumo.css")
+        include("utility.css")
+    }
+    into(layout.buildDirectory.dir("generated/lumo"))
+}
+
 // The brand image lives with the site's static files and is copied in here, so the demo and the
 // documentation cannot drift apart. `srcDir(task)` only contributes the directory, not the
 // dependency, hence the explicit wiring below.
 val brandAssets = tasks.register<Copy>("brandAssets") {
     from(rootProject.file("docs/src/jsMain/resources/static/img")) {
         // Keep the same `img/` layout the site uses, so both pages reference `img/<logo>.png`.
+        include("*.png")
         into("img")
     }
     into(layout.buildDirectory.dir("generated/brand"))
@@ -37,15 +53,32 @@ kotlin {
     sourceSets {
         jsMain {
             resources.srcDir(brandAssets)
+            resources.srcDir(copyLumoStyles)
         }
         jsMain.dependencies {
             implementation("org.jetbrains.kotlin-wrappers:kotlin-browser:2026.11.1")
-            // The page's own components are built with dom-kit: `TagName<T>.createElement`, the typed
-            // `cssSheet` DSL, and the custom-element adapter that `attachStyledShadow(RESET, own)` hangs
-            // off. Detekt forbids mixing `web.*` with `org.w3c.dom.*` / `kotlinx.browser.*`.
+            // dom-kit is what the pages themselves use for typed nodes and sheets: `HtmlTagName.a { … }`,
+            // the `cssSheet` DSL and the class names a page ships with its own rules. Detekt forbids mixing
+            // `web.*` with `org.w3c.dom.*` / `kotlinx.browser.*`.
             implementation(
                 "io.github.shijianjs:ktjs-dom-kit:" +
                     providers.gradleProperty("ktjs-dom-kit.version").get(),
+            )
+            // The shared shell: layout, menu, router, i18n and the page blocks. Published to
+            // `mavenLocal` by a working tree of the `ktjs-dom-kit` repository until the release batch.
+            implementation(
+                "io.github.shijianjs:ktjs-demo-kit-js:" +
+                    providers.gradleProperty("ktjs-demo-kit.version").get(),
+            )
+            // The components the pages compose with (card, horizontal / vertical layout) and the icon
+            // set the drawer marks come from.
+            implementation(
+                "io.github.shijianjs:ktjs-vaadin-web-components-js:" +
+                    providers.gradleProperty("ktjs-vaadin-web-components.version").get(),
+            )
+            implementation(
+                "io.github.shijianjs:ktjs-iconify-icon-js:" +
+                    providers.gradleProperty("ktjs-iconify-icon.version").get(),
             )
             // The published module the demo demonstrates, one line per module.
             implementation(project(":ktjs-wrapper-template-core"))
@@ -65,7 +98,7 @@ kotlin {
 // `srcDir(task)` contributes the directory but not the task dependency; resource processing is what
 // reads that directory, so the edge belongs there.
 tasks.named("jsProcessResources") {
-    dependsOn(brandAssets)
+    dependsOn(brandAssets, copyLumoStyles)
 }
 
 // ---------------------------------------------------------------------------------------------
