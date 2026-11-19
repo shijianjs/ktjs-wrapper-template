@@ -394,6 +394,24 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
 共享要有理由：只有两个以上组件**必须一起变**、并且说得清那份承诺（reset、主题 token、父容器布局）时才提取。
 全都共享，共享就不再共享；私有样式一旦长在共享文件里，就只敢加不敢改。
 
+### cssom 的取值类型是齐的，缺的是查法
+
+`web.cssom` / `web.canvas` 为**每个** CSS 属性生成了取值类型：字面量是 `sealed external interface` + companion
+（`None.none`、`Auto.auto`、`WhiteSpace.nowrap` …），数字走 `number(…)` 与 `Number.rem` / `.em` / `.px`，
+复合简写有同名工厂（`Flex(FlexGrow, FlexShrink, FlexBasis)`）。每个属性类型都能向下查它的子类型——
+`TextDecorationLine` → `NoneType` / `GlobalsType` → `None` / `Globals`，`Flex` → `NumberType` / `LengthType` /
+`Percentage` / `Auto` / `None`。
+
+所以**「找不到某个取值的构造函数」永远是查法的问题，不是库缺东西**，先查再决定要不要 cast：
+
+1. IDEA Index MCP 的 `ide_type_hierarchy`：`className = web.cssom.<属性类型>`、`scope = project_and_libraries`；
+2. 再翻 `kotlin-wrappers/kotlin-cssom-core/src/webMain/generated/web/cssom/<类型>.kt`；
+3. 都不行才写 `js("""("…")""")` / `unsafeCast`，并且注释要说明「CSS 本身没有类型」（`An+B` 公式、
+   `::part(名字)`、项目自定义属性），而不是「cssom 没有」。
+
+一个属性值一旦用字符串手写，就等于放弃编译器对这一处的检查；`flex = js("(1)")`、`textDecorationLine =
+js("(none)")` 这类写法都是查得不够，不是库不够。
+
 ### 默认 Shadow DOM，作用域不外溢
 
 - 组件默认渲染进 `shadow root`（`mode: 'open'`），样式由**这个组件自己的 sheet** 注入：Kotlin/JS 用
