@@ -346,6 +346,20 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
 那会把状态驱动刷新重新引进来。非元素的小部件（折叠控件、卡片等）同样是 class；函数式导出只留给真正的
 纯工具。
 
+### 组件语义优先，样式最后
+
+写界面先问「这是哪个组件」，再问「这要几条声明」。顺序是：组件 → 组件变体（`elevated` / `outlined` /
+`spacing` / `padding`）→ 布局容器（`vaadin-*-layout`）→ 组件库工具类 → 自己的样式。
+
+判定特征很直接：**一处多行样式只为拼一个语义**就是反例——`padding` + `border` + `border-radius` +
+`background` 四行等于一张卡片（`vaadin-card` 的 `elevated` / `outlined` 变体已经给了）；`display: flex` +
+`gap` 两行等于一个带间距的行；`<span>` 加圆角底色等于一个徽章（`vaadin-badge`）。这些一律换成
+组件与变体：组件不需要解释、不需要维护、跟着主题一起变，而每一行手写 CSS 都是一份以后要有人读的私有约定。
+
+例外只有**演示占位**：demo 里那些虚线框、手机边框、渐变底是「内容之外的示意」，可以自己写，但注释里
+要写明它是占位而不是组件。做封装库自己的 demo 尤其要用这套组件——demo 页是这套封装的第一份产品页面，
+用原生 DOM 手搓出一套平行实现，等于自己否掉了自己的库。
+
 ### 样式：静态进组件 sheet + class，内联只留给运行时值
 
 静态规则（盒模型、间距、字体、颜色、圆角、边框、网格，以及 `:hover` / `:focus-visible`、`::before` /
