@@ -1,13 +1,15 @@
 package io.github.shijianjs.ktjs.wrappertemplate.demo.page.overview
 
+import io.github.shijianjs.ktjs.demo.page.DemoPage
+import io.github.shijianjs.ktjs.dom.webcomponent.defineIfMissing
+import web.components.CustomElementReference
+import web.dom.TagName
 import io.github.shijianjs.ktjs.demo.i18n.Binder
 import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
 import io.github.shijianjs.ktjs.demo.i18n.Translations
 import io.github.shijianjs.ktjs.demo.i18n.texts
-import io.github.shijianjs.ktjs.demo.nav.Page
 import io.github.shijianjs.ktjs.demo.page.grid
-import io.github.shijianjs.ktjs.demo.page.newPage
 import io.github.shijianjs.ktjs.demo.page.paragraph
 import io.github.shijianjs.ktjs.demo.page.sectionBlock
 import io.github.shijianjs.ktjs.dom.css.cssSheet
@@ -116,14 +118,12 @@ private class CardLink(val id: String, val link: HTMLAnchorElement, val card: Ca
  * A card is a `vaadin-card` inside a link: the whole surface is clickable, and middle-click, "copy link
  * address" and keyboard activation come from the anchor instead of from a click handler.
  */
-internal class OverviewPage : Page {
-    private val page = newPage()
+internal class OverviewPage : DemoPage() {
 
     private val binder = Binder(overviewTexts)
 
     private val cards = mutableListOf<CardLink>()
 
-    override val node: HTMLElement get() = page
 
     init {
         val what = sectionBlock()
@@ -135,8 +135,8 @@ internal class OverviewPage : Page {
         binder.bind(start.hint) { it.startHint }
         start.body.append(grid(240, *buildCards().toTypedArray()))
 
-        page.addSheet(CARD_SHEET)
-        page.body.append(what.root, start.root)
+        addSheet(CARD_SHEET)
+        body.append(what.root, start.root)
     }
 
     private fun buildCards(): List<HTMLElement> = listOf("button", "api", "conventions").map { id ->
@@ -160,8 +160,8 @@ internal class OverviewPage : Page {
 
     override fun applyTranslation(lang: Lang) {
         val current = overviewTexts[lang]
-        page.setTitle(current.title)
-        page.setSummary(current.summary)
+        setTitle(current.title)
+        setSummary(current.summary)
         binder.apply(lang)
 
         val site = siteTexts[lang]
@@ -170,4 +170,18 @@ internal class OverviewPage : Page {
             entry.summary.textContent = current.cardSummaries[entry.id].orEmpty()
         }
     }
+
+    companion object : CustomElementReference<OverviewPage>(OverviewPage::class.js) {
+        val NAME: TagName<OverviewPage> = TagName("wrapper-template-overview-page")
+
+        fun define() {
+            defineIfMissing(NAME, this)
+        }
+    }
+}
+
+/** Creates a defined `<wrapper-template-overview-page>`. */
+internal fun newOverviewPage(): OverviewPage {
+    OverviewPage.define()
+    return OverviewPage.NAME()
 }

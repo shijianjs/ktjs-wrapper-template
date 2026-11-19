@@ -1,13 +1,15 @@
 package io.github.shijianjs.ktjs.wrappertemplate.demo.page.conventions
 
+import io.github.shijianjs.ktjs.demo.page.DemoPage
+import io.github.shijianjs.ktjs.dom.webcomponent.defineIfMissing
+import web.components.CustomElementReference
+import web.dom.TagName
 import io.github.shijianjs.ktjs.demo.i18n.Binder
 import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
 import io.github.shijianjs.ktjs.demo.i18n.Translations
 import io.github.shijianjs.ktjs.demo.i18n.texts
-import io.github.shijianjs.ktjs.demo.nav.Page
 import io.github.shijianjs.ktjs.demo.page.bulletList
-import io.github.shijianjs.ktjs.demo.page.newPage
 import io.github.shijianjs.ktjs.demo.page.sectionBlock
 import io.github.shijianjs.ktjs.dom.element.invoke
 import web.html.HTMLElement
@@ -62,14 +64,12 @@ private val conventionsTexts: Translations<ConventionsTexts> = texts(
  * A list of whole lines is the one case where replacing the collection is right: each line comes from
  * one language, the nodes are this page's own, and nothing above them is touched.
  */
-internal class ConventionsPage : Page {
-    private val page = newPage()
+internal class ConventionsPage : DemoPage() {
 
     private val binder = Binder(conventionsTexts)
 
     private val list: HTMLElement = bulletList(emptyList())
 
-    override val node: HTMLElement get() = page
 
     init {
         val section = sectionBlock()
@@ -77,15 +77,29 @@ internal class ConventionsPage : Page {
         binder.bind(section.hint) { it.hint }
         section.body.append(list)
 
-        page.body.append(section.root)
+        body.append(section.root)
     }
 
     override fun applyTranslation(lang: Lang) {
         val current = conventionsTexts[lang]
-        page.setTitle(current.title)
-        page.setSummary(current.summary)
+        setTitle(current.title)
+        setSummary(current.summary)
         binder.apply(lang)
 
         list.replaceChildren(*current.lines.map { HtmlTagName.li { textContent = it } }.toTypedArray())
     }
+
+    companion object : CustomElementReference<ConventionsPage>(ConventionsPage::class.js) {
+        val NAME: TagName<ConventionsPage> = TagName("wrapper-template-conventions-page")
+
+        fun define() {
+            defineIfMissing(NAME, this)
+        }
+    }
+}
+
+/** Creates a defined `<wrapper-template-conventions-page>`. */
+internal fun newConventionsPage(): ConventionsPage {
+    ConventionsPage.define()
+    return ConventionsPage.NAME()
 }

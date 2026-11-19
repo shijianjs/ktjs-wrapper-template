@@ -1,13 +1,15 @@
 package io.github.shijianjs.ktjs.wrappertemplate.demo.page.api
 
+import io.github.shijianjs.ktjs.demo.page.DemoPage
+import io.github.shijianjs.ktjs.dom.webcomponent.defineIfMissing
+import web.components.CustomElementReference
+import web.dom.TagName
 import io.github.shijianjs.ktjs.demo.i18n.Binder
 import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
 import io.github.shijianjs.ktjs.demo.i18n.Translations
 import io.github.shijianjs.ktjs.demo.i18n.texts
-import io.github.shijianjs.ktjs.demo.nav.Page
 import io.github.shijianjs.ktjs.demo.page.exampleBox
-import io.github.shijianjs.ktjs.demo.page.newPage
 import io.github.shijianjs.ktjs.demo.page.sectionBlock
 import io.github.shijianjs.ktjs.dom.css.cssSheet
 import io.github.shijianjs.ktjs.dom.css.dsl.className
@@ -117,8 +119,7 @@ private class ApiRow(val labelCell: HTMLTableCellElement, val valueCell: HTMLTab
  *
  * The right column is code, identical in both languages, so a switch only rewrites the left column.
  */
-internal class ApiPage : Page {
-    private val page = newPage()
+internal class ApiPage : DemoPage() {
 
     private val binder = Binder(apiTexts)
 
@@ -128,7 +129,6 @@ internal class ApiPage : Page {
 
     private val rows: List<ApiRow>
 
-    override val node: HTMLElement get() = page
 
     init {
         rows = english.rows.map {
@@ -148,14 +148,14 @@ internal class ApiPage : Page {
         binder.bind(section.hint) { it.hint }
         section.body.append(exampleBox(null, table))
 
-        page.addSheet(TABLE_SHEET)
-        page.body.append(section.root)
+        addSheet(TABLE_SHEET)
+        body.append(section.root)
     }
 
     override fun applyTranslation(lang: Lang) {
         val current = apiTexts[lang]
-        page.setTitle(current.title)
-        page.setSummary(current.summary)
+        setTitle(current.title)
+        setSummary(current.summary)
         binder.apply(lang)
 
         headRow.replaceChildren(
@@ -175,4 +175,18 @@ internal class ApiPage : Page {
             cells.valueCell.textContent = row.second
         }
     }
+
+    companion object : CustomElementReference<ApiPage>(ApiPage::class.js) {
+        val NAME: TagName<ApiPage> = TagName("wrapper-template-api-page")
+
+        fun define() {
+            defineIfMissing(NAME, this)
+        }
+    }
+}
+
+/** Creates a defined `<wrapper-template-api-page>`. */
+internal fun newApiPage(): ApiPage {
+    ApiPage.define()
+    return ApiPage.NAME()
 }

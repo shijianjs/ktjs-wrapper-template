@@ -1,14 +1,17 @@
 package io.github.shijianjs.ktjs.wrappertemplate.demo.page.button
 
+import io.github.shijianjs.ktjs.demo.page.DemoPage
+import io.github.shijianjs.ktjs.dom.element.invoke
+import io.github.shijianjs.ktjs.dom.webcomponent.defineIfMissing
+import web.components.CustomElementReference
+import web.dom.TagName
 import io.github.shijianjs.ktjs.demo.i18n.Binder
 import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
 import io.github.shijianjs.ktjs.demo.i18n.Translations
 import io.github.shijianjs.ktjs.demo.i18n.texts
-import io.github.shijianjs.ktjs.demo.nav.Page
 import io.github.shijianjs.ktjs.demo.page.Readout
 import io.github.shijianjs.ktjs.demo.page.exampleBox
-import io.github.shijianjs.ktjs.demo.page.newPage
 import io.github.shijianjs.ktjs.demo.page.row
 import io.github.shijianjs.ktjs.demo.page.sectionBlock
 import io.github.shijianjs.ktjs.wrappertemplate.core.ButtonElement
@@ -76,8 +79,7 @@ private val buttonTexts: Translations<ButtonTexts> = texts(
  * The demo keeps its own click count and rebuilds the three labels from it, so a language switch never
  * has to know what the reader has clicked.
  */
-internal class ButtonPage : Page {
-    private val page = newPage()
+internal class ButtonPage : DemoPage() {
 
     private val binder = Binder(buttonTexts)
 
@@ -91,7 +93,6 @@ internal class ButtonPage : Page {
 
     private var current: ButtonTexts = english
 
-    override val node: HTMLElement get() = page
 
     init {
         val section = sectionBlock()
@@ -108,7 +109,7 @@ internal class ButtonPage : Page {
         })
 
         section.body.append(exampleBox(null, row(counter, toggler), status.root))
-        page.body.append(section.root)
+        body.append(section.root)
         writeLabels()
     }
 
@@ -125,9 +126,23 @@ internal class ButtonPage : Page {
 
     override fun applyTranslation(lang: Lang) {
         current = buttonTexts[lang]
-        page.setTitle(current.title)
-        page.setSummary(current.summary)
+        setTitle(current.title)
+        setSummary(current.summary)
         binder.apply(lang)
         writeLabels()
     }
+
+    companion object : CustomElementReference<ButtonPage>(ButtonPage::class.js) {
+        val NAME: TagName<ButtonPage> = TagName("wrapper-template-button-page")
+
+        fun define() {
+            defineIfMissing(NAME, this)
+        }
+    }
+}
+
+/** Creates a defined `<wrapper-template-button-page>`. */
+internal fun newButtonPage(): ButtonPage {
+    ButtonPage.define()
+    return ButtonPage.NAME()
 }
