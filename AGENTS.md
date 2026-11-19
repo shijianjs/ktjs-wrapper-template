@@ -348,8 +348,15 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
 
 ### 组件语义优先，样式最后
 
-写界面先问「这是哪个组件」，再问「这要几条声明」。顺序是：组件 → 组件变体（`elevated` / `outlined` /
-`spacing` / `padding`）→ 布局容器（`vaadin-*-layout`）→ 组件库工具类 → 自己的样式。
+写界面先问「这是哪个组件」，再问「这要几条声明」。顺序是：**语义相同**的组件 → 组件自带变体
+（`elevated` / `outlined` / `spacing` / `padding`）→ 布局组件（`vaadin-*-layout`）→ 组件库工具类 →
+自己的样式。判据是语义，不是「形状差不多」。
+
+换成组件之后**别再改它的样子**：默认外观、默认间距、默认字号就是答案，需要不同外观用它自己的变体。
+不要补 `padding` / 阴影 / 字体 / 颜色，也不要在它的插槽里塞会改变排版的节点——典型反例是把卡片标题换成
+带下划线的链接，链接的 `color` 与 `text-decoration` 会顺着继承把整张卡片染成蓝色下划线，卡片也丢了它
+自己的排版。要让卡片可点击，就把卡片**包在** `<a>` 外层，再让外层交出颜色与装饰（`color: inherit` +
+`text-decoration: none`），卡片本身一行不动。
 
 判定特征很直接：**一处多行样式只为拼一个语义**就是反例——`padding` + `border` + `border-radius` +
 `background` 四行等于一张卡片（`vaadin-card` 的 `elevated` / `outlined` 变体已经给了）；`display: flex` +
