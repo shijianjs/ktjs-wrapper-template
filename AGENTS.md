@@ -358,6 +358,10 @@ update(data) { this.replaceChildren(); this.render(data); }   // 禁止
 自己的排版。要让卡片可点击，就把卡片**包在** `<a>` 外层，再让外层交出颜色与装饰（`color: inherit` +
 `text-decoration: none`），卡片本身一行不动。
 
+包一层还有第二个坑：**高度不再自动传导**。网格拉伸的是外层 `<a>`，里面的组件仍按内容高度收尾，同一行的
+卡片就高低不齐（双语页面里中文两行、英文三行最明显）。外层 `display: flex` + 里面的组件 `flex: 1`，
+最高那张决定整行，不用固定高度也不用截断文字。
+
 判定特征很直接：**一处多行样式只为拼一个语义**就是反例——`padding` + `border` + `border-radius` +
 `background` 四行等于一张卡片（`vaadin-card` 的 `elevated` / `outlined` 变体已经给了）；`display: flex` +
 `gap` 两行等于一个带间距的行；`<span>` 加圆角底色等于一个徽章（`vaadin-badge`）。这些一律换成
