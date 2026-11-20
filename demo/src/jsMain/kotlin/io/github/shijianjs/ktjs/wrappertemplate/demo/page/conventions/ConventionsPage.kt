@@ -14,15 +14,6 @@ import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import web.html.HTMLElement
 import web.html.HtmlTagName
 
-/** Every string this page shows, in one language. */
-private class ConventionsTexts(
-    val title: String,
-    val summary: String,
-    val heading: String,
-    val hint: String,
-    val lines: List<String>,
-)
-
 private val english: ConventionsTexts = ConventionsTexts(
     title = "Conventions",
     summary = "The same rules as the library: every component is a custom element with its own shadow " +
@@ -68,7 +59,6 @@ internal class ConventionsPage : DemoPage() {
     private val binder = Binder(conventionsTexts)
 
     private val list: HTMLElement = bulletList(emptyList())
-
 
     init {
         val section = SectionBlock.NAME { show() }

@@ -16,28 +16,14 @@ import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import web.cssom.BorderCollapse
 import web.cssom.CSSStyleSheet
 import web.cssom.ClassName
-import web.cssom.FontWeight
 import web.cssom.Padding
 import web.cssom.TextAlign
 import web.cssom.integer
 import web.cssom.pct
 import web.cssom.px
-import web.html.HTMLTableCellElement
 import web.html.HTMLTableRowElement
 import web.html.HTMLElement
 import web.html.HtmlTagName
-
-/** Every string this page shows, in one language. */
-private class ApiTexts(
-    val title: String,
-    val summary: String,
-    val heading: String,
-    val hint: String,
-    val upstreamHeading: String,
-    val kotlinHeading: String,
-    /** Row labels and the value each maps to; the values are code and identical in both languages. */
-    val rows: List<Pair<String, String>>,
-)
 
 private val english: ApiTexts = ApiTexts(
     title = "What the wrapper maps",
@@ -109,9 +95,6 @@ private val TABLE_SHEET: CSSStyleSheet = cssSheet {
     }
 }
 
-/** One row, kept so a language switch rewrites its first cell instead of rebuilding the table. */
-private class ApiRow(val labelCell: HTMLTableCellElement, val valueCell: HTMLTableCellElement)
-
 /**
  * The mapping table: what the module declares, and what it deliberately leaves to upstream.
  *
@@ -126,7 +109,6 @@ internal class ApiPage : DemoPage() {
     private val bodyRows = HtmlTagName.tbody()
 
     private val rows: List<ApiRow>
-
 
     init {
         rows = english.rows.map {

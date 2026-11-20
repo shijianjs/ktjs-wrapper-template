@@ -17,22 +17,6 @@ import io.github.shijianjs.ktjs.wrappertemplate.core.createButton
 import web.dom.clickEvent
 import web.events.EventHandler
 import web.events.addHandler
-import web.html.HTMLElement
-
-/** Every string this page shows, in one language. */
-private class ButtonTexts(
-    val title: String,
-    val summary: String,
-    val demoHeading: String,
-    val demoHint: String,
-    val clickMe: String,
-    val clickedOnce: String,
-    /** The count is a value, not a sentence: it stays a function so no call site builds prose. */
-    val clickedTimes: (clicks: Int) -> String,
-    val disableOther: String,
-    val enableOther: String,
-    val statusPrefix: String,
-)
 
 private val english: ButtonTexts = ButtonTexts(
     title = "The wrapped element",
@@ -90,7 +74,6 @@ internal class ButtonPage : DemoPage() {
     private var clicks = 0
 
     private var current: ButtonTexts = english
-
 
     init {
         val section = SectionBlock.NAME { show() }

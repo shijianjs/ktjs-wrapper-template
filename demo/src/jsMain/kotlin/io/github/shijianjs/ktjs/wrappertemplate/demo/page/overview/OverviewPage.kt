@@ -17,7 +17,6 @@ import io.github.shijianjs.ktjs.dom.css.dsl.tag
 import io.github.shijianjs.ktjs.dom.element.invoke
 import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import io.github.shijianjs.ktjs.vaadin.VaadinTagName
-import io.github.shijianjs.ktjs.vaadin.card.CardElement
 import io.github.shijianjs.ktjs.vaadin.card.CardVariants
 import io.github.shijianjs.ktjs.vaadin.card.createCard
 import io.github.shijianjs.ktjs.vaadin.themablemixin.addTheme
@@ -27,23 +26,9 @@ import web.cssom.Color
 import web.cssom.CSSStyleSheet
 import web.cssom.Display
 import web.cssom.None
-import web.cssom.TextDecorationLine
 import web.cssom.number
-import web.html.HTMLAnchorElement
 import web.html.HTMLElement
 import web.html.HtmlTagName
-
-/** Every string this page shows, in one language. */
-private class OverviewTexts(
-    val title: String,
-    val summary: String,
-    val whatHeading: String,
-    val whatBody: String,
-    val startHeading: String,
-    val startHint: String,
-    /** One line per card, keyed by the page id the card opens. */
-    val cardSummaries: Map<String, String>,
-)
 
 private val english: OverviewTexts = OverviewTexts(
     title = "Overview",
@@ -107,9 +92,6 @@ private val CARD_SHEET: CSSStyleSheet = cssSheet {
     }
 }
 
-/** One card of the index, kept typed so a language switch rewrites its title and summary in place. */
-private class CardLink(val id: String, val link: HTMLAnchorElement, val card: CardElement, val summary: HTMLElement)
-
 /**
  * Landing page: what the template is, and the three pages a derived project reads first.
  *
@@ -121,7 +103,6 @@ internal class OverviewPage : DemoPage() {
     private val binder = Binder(overviewTexts)
 
     private val cards = mutableListOf<CardLink>()
-
 
     init {
         val what = SectionBlock.NAME { show() }
