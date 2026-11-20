@@ -1,17 +1,16 @@
 package io.github.shijianjs.ktjs.wrappertemplate.demo.page.conventions
 
 import io.github.shijianjs.ktjs.demo.page.DemoPage
-import io.github.shijianjs.ktjs.dom.webcomponent.defineIfMissing
-import web.components.CustomElementReference
 import web.dom.TagName
 import io.github.shijianjs.ktjs.demo.i18n.Binder
 import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
 import io.github.shijianjs.ktjs.demo.i18n.Translations
 import io.github.shijianjs.ktjs.demo.i18n.texts
-import io.github.shijianjs.ktjs.demo.page.bulletList
-import io.github.shijianjs.ktjs.demo.page.sectionBlock
+import io.github.shijianjs.ktjs.demo.page.Blocks.bulletList
+import io.github.shijianjs.ktjs.demo.page.SectionBlock
 import io.github.shijianjs.ktjs.dom.element.invoke
+import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import web.html.HTMLElement
 import web.html.HtmlTagName
 
@@ -72,7 +71,7 @@ internal class ConventionsPage : DemoPage() {
 
 
     init {
-        val section = sectionBlock()
+        val section = SectionBlock.NAME { show() }
         binder.bind(section.heading) { it.heading }
         binder.bind(section.hint) { it.hint }
         section.body.append(list)
@@ -89,17 +88,5 @@ internal class ConventionsPage : DemoPage() {
         list.replaceChildren(*current.lines.map { HtmlTagName.li { textContent = it } }.toTypedArray())
     }
 
-    companion object : CustomElementReference<ConventionsPage>(ConventionsPage::class.js) {
-        val NAME: TagName<ConventionsPage> = TagName("wrapper-template-conventions-page")
-
-        fun define() {
-            defineIfMissing(NAME, this)
-        }
-    }
-}
-
-/** Creates a defined `<wrapper-template-conventions-page>`. */
-internal fun newConventionsPage(): ConventionsPage {
-    ConventionsPage.define()
-    return ConventionsPage.NAME()
+    companion object : CustomElementReferenceAdapter<ConventionsPage>(ConventionsPage::class.js, "wrapper-template-conventions-page")
 }

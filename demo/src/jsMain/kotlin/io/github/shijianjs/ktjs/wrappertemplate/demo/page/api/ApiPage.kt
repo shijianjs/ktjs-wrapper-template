@@ -1,20 +1,18 @@
 package io.github.shijianjs.ktjs.wrappertemplate.demo.page.api
 
 import io.github.shijianjs.ktjs.demo.page.DemoPage
-import io.github.shijianjs.ktjs.dom.webcomponent.defineIfMissing
-import web.components.CustomElementReference
-import web.dom.TagName
 import io.github.shijianjs.ktjs.demo.i18n.Binder
 import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
 import io.github.shijianjs.ktjs.demo.i18n.Translations
 import io.github.shijianjs.ktjs.demo.i18n.texts
-import io.github.shijianjs.ktjs.demo.page.exampleBox
-import io.github.shijianjs.ktjs.demo.page.sectionBlock
+import io.github.shijianjs.ktjs.demo.page.Blocks.exampleBox
+import io.github.shijianjs.ktjs.demo.page.SectionBlock
 import io.github.shijianjs.ktjs.dom.css.cssSheet
 import io.github.shijianjs.ktjs.dom.css.dsl.className
 import io.github.shijianjs.ktjs.dom.css.dsl.invoke
 import io.github.shijianjs.ktjs.dom.element.invoke
+import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import web.cssom.BorderCollapse
 import web.cssom.CSSStyleSheet
 import web.cssom.ClassName
@@ -143,7 +141,7 @@ internal class ApiPage : DemoPage() {
             append(HtmlTagName.thead { append(headRow) }, bodyRows)
         }
 
-        val section = sectionBlock()
+        val section = SectionBlock.NAME { show() }
         binder.bind(section.heading) { it.heading }
         binder.bind(section.hint) { it.hint }
         section.body.append(exampleBox(null, table))
@@ -176,17 +174,5 @@ internal class ApiPage : DemoPage() {
         }
     }
 
-    companion object : CustomElementReference<ApiPage>(ApiPage::class.js) {
-        val NAME: TagName<ApiPage> = TagName("wrapper-template-api-page")
-
-        fun define() {
-            defineIfMissing(NAME, this)
-        }
-    }
-}
-
-/** Creates a defined `<wrapper-template-api-page>`. */
-internal fun newApiPage(): ApiPage {
-    ApiPage.define()
-    return ApiPage.NAME()
+    companion object : CustomElementReferenceAdapter<ApiPage>(ApiPage::class.js, "wrapper-template-api-page")
 }

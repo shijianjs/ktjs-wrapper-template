@@ -6,6 +6,7 @@ import io.github.shijianjs.ktjs.demo.layout.LayoutConfig
 import io.github.shijianjs.ktjs.demo.style.Theme
 import web.dom.ElementId
 import web.dom.document
+import io.github.shijianjs.ktjs.dom.element.invoke
 
 /**
  * Entry point of the demo page.
@@ -25,7 +26,8 @@ public fun main() {
     val theme = Theme()
     theme.applyStored()
 
-    DemoLayout.define()
+    // The companion registers the tag in its `init`; reading `NAME` upgrades the element the page already spells.
+    DemoLayout.NAME
     val layout = document.getElementById(ElementId("demo")) as? DemoLayout
         ?: error("index.html has no <ktjs-demo-layout id=\"demo\">")
 

@@ -1,23 +1,21 @@
 package io.github.shijianjs.ktjs.wrappertemplate.demo.page.overview
 
 import io.github.shijianjs.ktjs.demo.page.DemoPage
-import io.github.shijianjs.ktjs.dom.webcomponent.defineIfMissing
-import web.components.CustomElementReference
-import web.dom.TagName
 import io.github.shijianjs.ktjs.demo.i18n.Binder
 import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
 import io.github.shijianjs.ktjs.demo.i18n.Translations
 import io.github.shijianjs.ktjs.demo.i18n.texts
-import io.github.shijianjs.ktjs.demo.page.grid
-import io.github.shijianjs.ktjs.demo.page.paragraph
-import io.github.shijianjs.ktjs.demo.page.sectionBlock
+import io.github.shijianjs.ktjs.demo.page.Blocks.paragraph
+import io.github.shijianjs.ktjs.demo.page.Grid
+import io.github.shijianjs.ktjs.demo.page.SectionBlock
 import io.github.shijianjs.ktjs.dom.css.cssSheet
 import io.github.shijianjs.ktjs.dom.css.dsl.child
 import io.github.shijianjs.ktjs.dom.css.dsl.className
 import io.github.shijianjs.ktjs.dom.css.dsl.invoke
 import io.github.shijianjs.ktjs.dom.css.dsl.tag
 import io.github.shijianjs.ktjs.dom.element.invoke
+import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import io.github.shijianjs.ktjs.vaadin.VaadinTagName
 import io.github.shijianjs.ktjs.vaadin.card.CardElement
 import io.github.shijianjs.ktjs.vaadin.card.CardVariants
@@ -126,14 +124,14 @@ internal class OverviewPage : DemoPage() {
 
 
     init {
-        val what = sectionBlock()
+        val what = SectionBlock.NAME { show() }
         binder.bind(what.heading) { it.whatHeading }
         what.body.append(binder.bind(paragraph()) { it.whatBody })
 
-        val start = sectionBlock()
+        val start = SectionBlock.NAME { show() }
         binder.bind(start.heading) { it.startHeading }
         binder.bind(start.hint) { it.startHint }
-        start.body.append(grid(240, *buildCards().toTypedArray()))
+        start.body.append(Grid.NAME { show(240); add(*buildCards().toTypedArray()) })
 
         addSheet(CARD_SHEET)
         body.append(what.root, start.root)
@@ -171,17 +169,5 @@ internal class OverviewPage : DemoPage() {
         }
     }
 
-    companion object : CustomElementReference<OverviewPage>(OverviewPage::class.js) {
-        val NAME: TagName<OverviewPage> = TagName("wrapper-template-overview-page")
-
-        fun define() {
-            defineIfMissing(NAME, this)
-        }
-    }
-}
-
-/** Creates a defined `<wrapper-template-overview-page>`. */
-internal fun newOverviewPage(): OverviewPage {
-    OverviewPage.define()
-    return OverviewPage.NAME()
+    companion object : CustomElementReferenceAdapter<OverviewPage>(OverviewPage::class.js, "wrapper-template-overview-page")
 }

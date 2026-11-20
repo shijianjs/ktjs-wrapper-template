@@ -2,18 +2,16 @@ package io.github.shijianjs.ktjs.wrappertemplate.demo.page.button
 
 import io.github.shijianjs.ktjs.demo.page.DemoPage
 import io.github.shijianjs.ktjs.dom.element.invoke
-import io.github.shijianjs.ktjs.dom.webcomponent.defineIfMissing
-import web.components.CustomElementReference
-import web.dom.TagName
+import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import io.github.shijianjs.ktjs.demo.i18n.Binder
 import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
 import io.github.shijianjs.ktjs.demo.i18n.Translations
 import io.github.shijianjs.ktjs.demo.i18n.texts
-import io.github.shijianjs.ktjs.demo.page.newReadout
-import io.github.shijianjs.ktjs.demo.page.exampleBox
-import io.github.shijianjs.ktjs.demo.page.row
-import io.github.shijianjs.ktjs.demo.page.sectionBlock
+import io.github.shijianjs.ktjs.demo.page.Blocks.exampleBox
+import io.github.shijianjs.ktjs.demo.page.Blocks.row
+import io.github.shijianjs.ktjs.demo.page.SectionBlock
+import io.github.shijianjs.ktjs.demo.page.Readout
 import io.github.shijianjs.ktjs.wrappertemplate.core.ButtonElement
 import io.github.shijianjs.ktjs.wrappertemplate.core.createButton
 import web.dom.clickEvent
@@ -87,7 +85,7 @@ internal class ButtonPage : DemoPage() {
 
     private val toggler: ButtonElement = createButton("")
 
-    private val status = newReadout()
+    private val status = Readout.NAME { show() }
 
     private var clicks = 0
 
@@ -95,7 +93,7 @@ internal class ButtonPage : DemoPage() {
 
 
     init {
-        val section = sectionBlock()
+        val section = SectionBlock.NAME { show() }
         binder.bind(section.heading) { it.demoHeading }
         binder.bind(section.hint) { it.demoHint }
 
@@ -132,17 +130,5 @@ internal class ButtonPage : DemoPage() {
         writeLabels()
     }
 
-    companion object : CustomElementReference<ButtonPage>(ButtonPage::class.js) {
-        val NAME: TagName<ButtonPage> = TagName("wrapper-template-button-page")
-
-        fun define() {
-            defineIfMissing(NAME, this)
-        }
-    }
-}
-
-/** Creates a defined `<wrapper-template-button-page>`. */
-internal fun newButtonPage(): ButtonPage {
-    ButtonPage.define()
-    return ButtonPage.NAME()
+    companion object : CustomElementReferenceAdapter<ButtonPage>(ButtonPage::class.js, "wrapper-template-button-page")
 }
