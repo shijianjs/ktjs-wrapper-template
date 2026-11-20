@@ -127,11 +127,11 @@ internal class OverviewPage : DemoPage() {
 
     init {
         val what = sectionBlock()
-        binder.bind(what.title) { it.whatHeading }
+        binder.bind(what.heading) { it.whatHeading }
         what.body.append(binder.bind(paragraph()) { it.whatBody })
 
         val start = sectionBlock()
-        binder.bind(start.title) { it.startHeading }
+        binder.bind(start.heading) { it.startHeading }
         binder.bind(start.hint) { it.startHint }
         start.body.append(grid(240, *buildCards().toTypedArray()))
 

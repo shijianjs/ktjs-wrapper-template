@@ -73,7 +73,7 @@ internal class ConventionsPage : DemoPage() {
 
     init {
         val section = sectionBlock()
-        binder.bind(section.title) { it.heading }
+        binder.bind(section.heading) { it.heading }
         binder.bind(section.hint) { it.hint }
         section.body.append(list)
 

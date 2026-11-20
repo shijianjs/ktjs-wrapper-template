@@ -96,7 +96,7 @@ internal class ButtonPage : DemoPage() {
 
     init {
         val section = sectionBlock()
-        binder.bind(section.title) { it.demoHeading }
+        binder.bind(section.heading) { it.demoHeading }
         binder.bind(section.hint) { it.demoHint }
 
         counter.clickEvent.addHandler(EventHandler {
