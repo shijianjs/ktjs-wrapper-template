@@ -18,39 +18,6 @@ import web.dom.clickEvent
 import web.events.EventHandler
 import web.events.addHandler
 
-private val english: ButtonTexts = ButtonTexts(
-    title = "The wrapped element",
-    summary = "Both buttons are <vaadin-button>, created by ktjs-wrapper-template-core.",
-    demoHeading = "Created by Kotlin",
-    demoHint = "One button counts its own clicks, the other flips the first one's mapped `disabled` " +
-        "property. Labels derive from that state instead of accumulating text.",
-    clickMe = "Click me",
-    clickedOnce = "Clicked once",
-    clickedTimes = { clicks -> "Clicked $clicks times" },
-    disableOther = "Disable the other button",
-    enableOther = "Enable the other button",
-    statusPrefix = "Clicks",
-)
-
-private val chinese: ButtonTexts = ButtonTexts(
-    title = "被封装出来的元素",
-    summary = "两个按钮都是 ktjs-wrapper-template-core 创建的 <vaadin-button>。",
-    demoHeading = "由 Kotlin 创建",
-    demoHint = "一个按钮累计自己的点击次数，另一个翻转第一个按钮映射过来的 `disabled` 属性。" +
-        "标签文本由状态推导，而不是一层层往上拼。",
-    clickMe = "点我",
-    clickedOnce = "已点一次",
-    clickedTimes = { clicks -> "已点 $clicks 次" },
-    disableOther = "禁用另一个按钮",
-    enableOther = "启用另一个按钮",
-    statusPrefix = "点击次数",
-)
-
-private val buttonTexts: Translations<ButtonTexts> = texts(
-    Langs.EN to english,
-    Langs.ZH_HANS to chinese,
-)
-
 /**
  * The one thing the wrapper exists for: a `<vaadin-button>` built from Kotlin.
  *
@@ -113,5 +80,36 @@ internal class ButtonPage : DemoPage() {
         writeLabels()
     }
 
-    companion object : CustomElementReferenceAdapter<ButtonPage>(ButtonPage::class.js, "wrapper-template-button-page")
+    companion object : CustomElementReferenceAdapter<ButtonPage>(ButtonPage::class.js, "wrapper-template-button-page") {
+        private val english: ButtonTexts = ButtonTexts(
+            title = "The wrapped element",
+            summary = "Both buttons are <vaadin-button>, created by ktjs-wrapper-template-core.",
+            demoHeading = "Created by Kotlin",
+            demoHint = "One button counts its own clicks, the other flips the first one's mapped `disabled` " +
+                "property. Labels derive from that state instead of accumulating text.",
+            clickMe = "Click me",
+            clickedOnce = "Clicked once",
+            clickedTimes = { clicks -> "Clicked $clicks times" },
+            disableOther = "Disable the other button",
+            enableOther = "Enable the other button",
+            statusPrefix = "Clicks",
+        )
+        private val chinese: ButtonTexts = ButtonTexts(
+            title = "被封装出来的元素",
+            summary = "两个按钮都是 ktjs-wrapper-template-core 创建的 <vaadin-button>。",
+            demoHeading = "由 Kotlin 创建",
+            demoHint = "一个按钮累计自己的点击次数，另一个翻转第一个按钮映射过来的 `disabled` 属性。" +
+                "标签文本由状态推导，而不是一层层往上拼。",
+            clickMe = "点我",
+            clickedOnce = "已点一次",
+            clickedTimes = { clicks -> "已点 $clicks 次" },
+            disableOther = "禁用另一个按钮",
+            enableOther = "启用另一个按钮",
+            statusPrefix = "点击次数",
+        )
+        private val buttonTexts: Translations<ButtonTexts> = texts(
+            Langs.EN to english,
+            Langs.ZH_HANS to chinese,
+        )
+    }
 }

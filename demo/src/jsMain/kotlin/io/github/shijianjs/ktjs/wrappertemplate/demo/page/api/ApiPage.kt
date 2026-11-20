@@ -25,76 +25,6 @@ import web.html.HTMLTableRowElement
 import web.html.HTMLElement
 import web.html.HtmlTagName
 
-private val english: ApiTexts = ApiTexts(
-    title = "What the wrapper maps",
-    summary = "Only what upstream declares as an API is mapped; the label stays light-DOM text.",
-    heading = "Property by property",
-    hint = "The same table a new module is cut from: read the upstream declaration, then decide the Kotlin type.",
-    upstreamHeading = "upstream",
-    kotlinHeading = "in Kotlin",
-    rows = listOf(
-        "npm package" to "@vaadin/button",
-        "tag" to "<vaadin-button>",
-        "element class" to "ButtonElement : HTMLElement",
-        "mapped property" to "disabled: Boolean",
-        "label" to "light-DOM text (shadow part \"label\")",
-        "styling" to "parts label / prefix / suffix, --vaadin-button-*",
-    ),
-)
-
-private val chinese: ApiTexts = ApiTexts(
-    title = "封装层映射了什么",
-    summary = "只映射上游声明为 API 的东西；标签文本仍是 light DOM 文本。",
-    heading = "逐条对照",
-    hint = "新模块就照这张表切：先读上游声明，再决定 Kotlin 类型。",
-    upstreamHeading = "上游",
-    kotlinHeading = "Kotlin 侧",
-    rows = listOf(
-        "npm 包" to "@vaadin/button",
-        "标签" to "<vaadin-button>",
-        "元素类" to "ButtonElement : HTMLElement",
-        "映射属性" to "disabled: Boolean",
-        "标签文本" to "light DOM 文本（shadow part \"label\"）",
-        "样式入口" to "parts label / prefix / suffix、--vaadin-button-*",
-    ),
-)
-
-private val apiTexts: Translations<ApiTexts> = texts(
-    Langs.EN to english,
-    Langs.ZH_HANS to chinese,
-)
-
-/** The table's own class names: only this page selects and carries them. */
-private val API_TABLE: ClassName = ClassName("api-table")
-
-private val API_CELL: ClassName = ClassName("api-cell")
-
-private val API_HEAD_CELL: ClassName = ClassName("api-cell-head")
-
-/**
- * A static definition table has no Vaadin component counterpart — `vaadin-grid` is the element for data
- * a user navigates, and this is six fixed rows — so it stays a real `<table>`.
- *
- * The rules are the table's own: collapse the borders, one padding per cell, and the header weight. Colours
- * come from Lumo's tokens, so the table follows the theme like everything else on the page.
- */
-private val TABLE_SHEET: CSSStyleSheet = cssSheet {
-    className(API_TABLE).invoke {
-        width = 100.pct
-        borderCollapse = BorderCollapse.collapse
-    }
-
-    className(API_CELL).invoke {
-        padding = Padding(6.px, 8.px)
-    }
-
-    className(API_HEAD_CELL).invoke {
-        width = 32.pct
-        fontWeight = integer(600)
-        textAlign = TextAlign.left
-    }
-}
-
 /**
  * The mapping table: what the module declares, and what it deliberately leaves to upstream.
  *
@@ -156,5 +86,69 @@ internal class ApiPage : DemoPage() {
         }
     }
 
-    companion object : CustomElementReferenceAdapter<ApiPage>(ApiPage::class.js, "wrapper-template-api-page")
+    companion object : CustomElementReferenceAdapter<ApiPage>(ApiPage::class.js, "wrapper-template-api-page") {
+        private val english: ApiTexts = ApiTexts(
+            title = "What the wrapper maps",
+            summary = "Only what upstream declares as an API is mapped; the label stays light-DOM text.",
+            heading = "Property by property",
+            hint = "The same table a new module is cut from: read the upstream declaration, then decide the Kotlin type.",
+            upstreamHeading = "upstream",
+            kotlinHeading = "in Kotlin",
+            rows = listOf(
+                "npm package" to "@vaadin/button",
+                "tag" to "<vaadin-button>",
+                "element class" to "ButtonElement : HTMLElement",
+                "mapped property" to "disabled: Boolean",
+                "label" to "light-DOM text (shadow part \"label\")",
+                "styling" to "parts label / prefix / suffix, --vaadin-button-*",
+            ),
+        )
+        private val chinese: ApiTexts = ApiTexts(
+            title = "封装层映射了什么",
+            summary = "只映射上游声明为 API 的东西；标签文本仍是 light DOM 文本。",
+            heading = "逐条对照",
+            hint = "新模块就照这张表切：先读上游声明，再决定 Kotlin 类型。",
+            upstreamHeading = "上游",
+            kotlinHeading = "Kotlin 侧",
+            rows = listOf(
+                "npm 包" to "@vaadin/button",
+                "标签" to "<vaadin-button>",
+                "元素类" to "ButtonElement : HTMLElement",
+                "映射属性" to "disabled: Boolean",
+                "标签文本" to "light DOM 文本（shadow part \"label\"）",
+                "样式入口" to "parts label / prefix / suffix、--vaadin-button-*",
+            ),
+        )
+        private val apiTexts: Translations<ApiTexts> = texts(
+            Langs.EN to english,
+            Langs.ZH_HANS to chinese,
+        )
+        /** The table's own class names: only this page selects and carries them. */
+        private val API_TABLE: ClassName = ClassName("api-table")
+        private val API_CELL: ClassName = ClassName("api-cell")
+        private val API_HEAD_CELL: ClassName = ClassName("api-cell-head")
+        /**
+         * A static definition table has no Vaadin component counterpart — `vaadin-grid` is the element for data
+         * a user navigates, and this is six fixed rows — so it stays a real `<table>`.
+         *
+         * The rules are the table's own: collapse the borders, one padding per cell, and the header weight. Colours
+         * come from Lumo's tokens, so the table follows the theme like everything else on the page.
+         */
+        private val TABLE_SHEET: CSSStyleSheet = cssSheet {
+            className(API_TABLE).invoke {
+                width = 100.pct
+                borderCollapse = BorderCollapse.collapse
+            }
+
+            className(API_CELL).invoke {
+                padding = Padding(6.px, 8.px)
+            }
+
+            className(API_HEAD_CELL).invoke {
+                width = 32.pct
+                fontWeight = integer(600)
+                textAlign = TextAlign.left
+            }
+        }
+    }
 }
