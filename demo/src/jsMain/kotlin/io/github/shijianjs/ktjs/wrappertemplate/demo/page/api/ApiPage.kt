@@ -127,6 +127,7 @@ internal class ApiPage : DemoPage() {
         private val API_TABLE: ClassName = ClassName("api-table")
         private val API_CELL: ClassName = ClassName("api-cell")
         private val API_HEAD_CELL: ClassName = ClassName("api-cell-head")
+
         /**
          * A static definition table has no Vaadin component counterpart — `vaadin-grid` is the element for data
          * a user navigates, and this is six fixed rows — so it stays a real `<table>`.

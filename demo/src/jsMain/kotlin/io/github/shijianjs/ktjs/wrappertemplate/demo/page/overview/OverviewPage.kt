@@ -128,6 +128,7 @@ internal class OverviewPage : DemoPage() {
         )
         /** The class the cards are found by in tests; it carries no style of its own. */
         private val CARD_LINK: ClassName = ClassName("card-link")
+
         /**
          * What the index needs from the wrapper — two declarations, each one caused by the anchor rather than by
          * the card: a link paints its text like a link and does not pass a row's height on to its children. The
