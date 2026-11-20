@@ -99,8 +99,8 @@ class Action : CustomElementAdapter() {
         …
     }
 
-    companion object : CustomElementReference<Action>(Action::class.js) {
-        val NAME: TagName<Action> = TagName(HomeMarkup.ACTION)
+    companion object : CustomElementReferenceAdapter<Action>(Action::class.js, HomeMarkup.ACTION) {
+        // NAME 由适配器提供（TagName<Action>）；读它一次就完成注册 + 创建，不需要 newAction() 这种工厂
 
         private val CSS: String = """
             .ktjs-button-primary:hover { … }
