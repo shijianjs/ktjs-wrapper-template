@@ -10,7 +10,7 @@ import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
 import io.github.shijianjs.ktjs.demo.i18n.Translations
 import io.github.shijianjs.ktjs.demo.i18n.texts
-import io.github.shijianjs.ktjs.demo.page.Readout
+import io.github.shijianjs.ktjs.demo.page.newReadout
 import io.github.shijianjs.ktjs.demo.page.exampleBox
 import io.github.shijianjs.ktjs.demo.page.row
 import io.github.shijianjs.ktjs.demo.page.sectionBlock
@@ -87,7 +87,7 @@ internal class ButtonPage : DemoPage() {
 
     private val toggler: ButtonElement = createButton("")
 
-    private val status = Readout()
+    private val status = newReadout()
 
     private var clicks = 0
 
