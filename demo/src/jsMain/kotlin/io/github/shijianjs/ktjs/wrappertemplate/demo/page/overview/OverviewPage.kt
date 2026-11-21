@@ -15,7 +15,6 @@ import io.github.shijianjs.ktjs.dom.css.dsl.className
 import io.github.shijianjs.ktjs.dom.css.dsl.invoke
 import io.github.shijianjs.ktjs.dom.css.dsl.tag
 import io.github.shijianjs.ktjs.dom.element.invoke
-import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import io.github.shijianjs.ktjs.vaadin.VaadinTagName
 import io.github.shijianjs.ktjs.vaadin.card.CardVariants
 import io.github.shijianjs.ktjs.vaadin.card.createCard
@@ -88,7 +87,7 @@ internal class OverviewPage : DemoPage() {
         }
     }
 
-    companion object : CustomElementReferenceAdapter<OverviewPage>(OverviewPage::class.js, "wrapper-template-overview-page") {
+    companion object : OverviewPageDefaultReference() {
         private val english: OverviewTexts = OverviewTexts(
             title = "Overview",
             summary = "A Kotlin/JS wrapper around @vaadin/button, and the skeleton every ktjs-* wrapper starts from.",

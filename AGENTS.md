@@ -662,6 +662,10 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
   不往它的 shadow 里伸手。
 - 页面代码用 `ktjs-dom-kit`：版本写在 `gradle.properties` 的 `ktjs-dom-kit.version`（Maven Central 普通依赖），
   `demo/build.gradle.kts` 的 `jsMain` 引用它；标签走 `TagName<T>`、样式走 `cssSheet` / `attachStyledShadow`。
+- **元素不手写 reference**：`ktjs-dom-kit-ksp` 跑在 `demo` 模块里（`kspJs` 依赖同一份 `ktjs-dom-kit.version`），
+  从类名 + `ksp { arg("ktjs.tagPrefix", "…") }` 生成标签与 `observedAttributes`。companion 只有一行
+  `companion object : XDefaultReference()`；标签不能由类名拼出来时才写 `name = "…"`，属性名不一样时用
+  `@AttributeName`。属性一律零参 `by attr`，名字、`ALL` 与 `ATTRIBUTES` 都在生成物里。
 - 结构按归属分层：`shell/`（外壳：容器 + 它自己那份 sheet 与 `ClassName` 常量）、`page/`（页面框架、区块、
   页面的 sheet 与常量）、`nav/`（站点目录与路由）、`i18n/`（语言、文案、翻译容器、绑定器）；一对多做
   `section/` + `section/sections/`，外壳不做基类、不与使用者同级。**样式表与常量跟着 owner 走**：不要合成

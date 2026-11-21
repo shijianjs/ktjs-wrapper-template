@@ -2,7 +2,6 @@ package io.github.shijianjs.ktjs.wrappertemplate.demo.page.button
 
 import io.github.shijianjs.ktjs.demo.page.DemoPage
 import io.github.shijianjs.ktjs.dom.element.invoke
-import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import io.github.shijianjs.ktjs.demo.i18n.Binder
 import io.github.shijianjs.ktjs.demo.i18n.Lang
 import io.github.shijianjs.ktjs.demo.i18n.Langs
@@ -80,7 +79,7 @@ internal class ButtonPage : DemoPage() {
         writeLabels()
     }
 
-    companion object : CustomElementReferenceAdapter<ButtonPage>(ButtonPage::class.js, "wrapper-template-button-page") {
+    companion object : ButtonPageDefaultReference() {
         private val english: ButtonTexts = ButtonTexts(
             title = "The wrapped element",
             summary = "Both buttons are <vaadin-button>, created by ktjs-wrapper-template-core.",

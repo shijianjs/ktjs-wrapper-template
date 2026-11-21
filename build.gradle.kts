@@ -8,6 +8,9 @@ import org.jetbrains.kotlin.gradle.targets.js.npm.NpmExtension
 
 plugins {
     kotlin("multiplatform") version "2.4.21" apply false
+    // Runs `ktjs-dom-kit-ksp` over a module's elements. `apply false`: only the module that
+    // defines custom elements applies it, and the processor arrives as a dependency.
+    id("com.google.devtools.ksp") version "2.3.14" apply false
     id("com.vanniktech.maven.publish") version "0.37.0" apply false
     id("dev.detekt") version "2.0.0-alpha.6" apply false
     id("org.jetbrains.dokka") version "2.3.0"

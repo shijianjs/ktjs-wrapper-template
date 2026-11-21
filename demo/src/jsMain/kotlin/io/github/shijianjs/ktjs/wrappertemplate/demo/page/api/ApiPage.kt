@@ -12,7 +12,6 @@ import io.github.shijianjs.ktjs.dom.css.cssSheet
 import io.github.shijianjs.ktjs.dom.css.dsl.className
 import io.github.shijianjs.ktjs.dom.css.dsl.invoke
 import io.github.shijianjs.ktjs.dom.element.invoke
-import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import web.cssom.BorderCollapse
 import web.cssom.CSSStyleSheet
 import web.cssom.ClassName
@@ -86,7 +85,7 @@ internal class ApiPage : DemoPage() {
         }
     }
 
-    companion object : CustomElementReferenceAdapter<ApiPage>(ApiPage::class.js, "wrapper-template-api-page") {
+    companion object : ApiPageDefaultReference() {
         private val english: ApiTexts = ApiTexts(
             title = "What the wrapper maps",
             summary = "Only what upstream declares as an API is mapped; the label stays light-DOM text.",

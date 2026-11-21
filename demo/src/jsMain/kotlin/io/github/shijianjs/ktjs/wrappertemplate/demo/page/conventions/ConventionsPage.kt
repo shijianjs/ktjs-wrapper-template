@@ -10,7 +10,6 @@ import io.github.shijianjs.ktjs.demo.i18n.texts
 import io.github.shijianjs.ktjs.demo.page.Blocks.bulletList
 import io.github.shijianjs.ktjs.demo.page.SectionBlock
 import io.github.shijianjs.ktjs.dom.element.invoke
-import io.github.shijianjs.ktjs.dom.webcomponent.CustomElementReferenceAdapter
 import web.html.HTMLElement
 import web.html.HtmlTagName
 
@@ -44,7 +43,7 @@ internal class ConventionsPage : DemoPage() {
         list.replaceChildren(*current.lines.map { HtmlTagName.li { textContent = it } }.toTypedArray())
     }
 
-    companion object : CustomElementReferenceAdapter<ConventionsPage>(ConventionsPage::class.js, "wrapper-template-conventions-page") {
+    companion object : ConventionsPageDefaultReference() {
         private val english: ConventionsTexts = ConventionsTexts(
             title = "Conventions",
             summary = "The same rules as the library: every component is a custom element with its own shadow " +
