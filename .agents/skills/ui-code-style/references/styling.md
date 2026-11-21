@@ -103,8 +103,9 @@ class Action : CustomElementAdapter() {
         …
     }
 
-    companion object : CustomElementReferenceAdapter<Action>(Action::class.js, HomeMarkup.ACTION) {
-        // NAME 由适配器提供（TagName<Action>）；读它一次就完成注册 + 创建，不需要 newAction() 这种工厂
+    companion object : ActionDefaultReference() {
+        // 标签、observedAttributes 都由处理器从声明生成；NAME 是那个标签的类型化形态，读它一次就完成注册 + 创建，
+        // 不需要 newAction() 这种工厂
 
         private val CSS: String = """
             .ktjs-button-primary:hover { … }
