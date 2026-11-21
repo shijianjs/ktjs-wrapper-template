@@ -23,24 +23,24 @@ class DemoPageTest {
 
         assertTrue(page.title().contains("ktjs-wrapper-template"), "title: ${page.title()}")
         assertTrue(page.locator("#demo img.layout__logo").isVisible(), "the shell serves the project logo")
-        assertEquals("Overview", page.locator("#demo ktjs-demo-page h1").first().textContent())
+        assertEquals("Overview", page.locator("#demo wrapper-template-overview-page h1").first().textContent())
 
         // One top-level row for the lifted start group, one group with the two reference pages.
         val rows = page.locator("#demo vaadin-side-nav-item").count()
         assertTrue(rows >= 4, "drawer rows: $rows")
 
-        val cards = page.locator("#demo ktjs-demo-page a.card-link").count()
+        val cards = page.locator("#demo wrapper-template-overview-page a.card-link").count()
         assertEquals(3, cards, "one card per page behind the overview")
     }
 
     @RetryingTest(maxAttempts = 2)
     fun `a card opens its page`(page: Page) {
         openPage(page)
-        page.locator("#demo ktjs-demo-page a.card-link[data-route='button']").first().click()
-        page.waitForSelector("#demo ktjs-demo-page h1")
+        page.locator("#demo wrapper-template-overview-page a.card-link[data-route='button']").first().click()
+        page.waitForSelector("#demo wrapper-template-button-page h1")
 
-        assertEquals("The wrapped element", page.locator("#demo ktjs-demo-page h1").first().textContent())
-        assertEquals(2, page.locator("#demo ktjs-demo-page vaadin-button").count())
+        assertEquals("The wrapped element", page.locator("#demo wrapper-template-button-page h1").first().textContent())
+        assertEquals(2, page.locator("#demo wrapper-template-button-page vaadin-button").count())
     }
 
     @RetryingTest(maxAttempts = 2)
@@ -48,13 +48,13 @@ class DemoPageTest {
         openPage(page)
         openRoute(page, "button")
 
-        val counter = page.locator("#demo ktjs-demo-page vaadin-button").first()
+        val counter = page.locator("#demo wrapper-template-button-page vaadin-button").first()
         assertEquals("Click me", counter.textContent())
-        assertEquals("Clicks: 0", page.locator("#demo ktjs-demo-page .readout").first().textContent())
+        assertEquals("Clicks: 0", page.locator("#demo wrapper-template-button-page .readout").first().textContent())
 
         counter.click()
         assertEquals("Clicked once", counter.textContent())
-        assertEquals("Clicks: 1", page.locator("#demo ktjs-demo-page .readout").first().textContent())
+        assertEquals("Clicks: 1", page.locator("#demo wrapper-template-button-page .readout").first().textContent())
     }
 
     @RetryingTest(maxAttempts = 2)
@@ -62,8 +62,8 @@ class DemoPageTest {
         openPage(page)
         openRoute(page, "button")
 
-        val counter = page.locator("#demo ktjs-demo-page vaadin-button").first()
-        page.locator("#demo ktjs-demo-page vaadin-button").nth(1).click()
+        val counter = page.locator("#demo wrapper-template-button-page vaadin-button").first()
+        page.locator("#demo wrapper-template-button-page vaadin-button").nth(1).click()
 
         assertTrue(
             counter.evaluate("(node) => node.disabled") as Boolean,
@@ -75,13 +75,13 @@ class DemoPageTest {
     fun `the mapping table and the conventions list render`(page: Page) {
         openPage(page)
         openRoute(page, "api")
-        assertEquals("What the wrapper maps", page.locator("#demo ktjs-demo-page h1").first().textContent())
+        assertEquals("What the wrapper maps", page.locator("#demo wrapper-template-api-page h1").first().textContent())
         // Six rows of the mapping plus the header row.
-        assertEquals(7, page.locator("#demo ktjs-demo-page table tr").count())
+        assertEquals(7, page.locator("#demo wrapper-template-api-page table tr").count())
 
         openRoute(page, "conventions")
-        assertEquals("Conventions", page.locator("#demo ktjs-demo-page h1").first().textContent())
-        assertEquals(5, page.locator("#demo ktjs-demo-page ul li").count())
+        assertEquals("Conventions", page.locator("#demo wrapper-template-conventions-page h1").first().textContent())
+        assertEquals(5, page.locator("#demo wrapper-template-conventions-page ul li").count())
     }
 
     @RetryingTest(maxAttempts = 2)
@@ -90,9 +90,9 @@ class DemoPageTest {
         openRoute(page, "button")
 
         switchLanguage(page, "zh-Hans")
-        assertEquals("被封装出来的元素", page.locator("#demo ktjs-demo-page h1").first().textContent())
-        assertEquals("点我", page.locator("#demo ktjs-demo-page vaadin-button").first().textContent())
-        assertEquals("点击次数: 0", page.locator("#demo ktjs-demo-page .readout").first().textContent())
+        assertEquals("被封装出来的元素", page.locator("#demo wrapper-template-button-page h1").first().textContent())
+        assertEquals("点我", page.locator("#demo wrapper-template-button-page vaadin-button").first().textContent())
+        assertEquals("点击次数: 0", page.locator("#demo wrapper-template-button-page .readout").first().textContent())
     }
 
     @RetryingTest(maxAttempts = 2)
@@ -126,13 +126,13 @@ class DemoPageTest {
 
     private fun openPage(page: Page) {
         page.navigate("/", Page.NavigateOptions().setWaitUntil(WaitUntilState.NETWORKIDLE))
-        page.waitForSelector("#demo ktjs-demo-page h1")
+        page.waitForSelector("#demo wrapper-template-overview-page h1")
     }
 
     /** Clicks the drawer item for [route]; the router is also what the menu drives. */
     private fun openRoute(page: Page, route: String) {
         page.locator("#demo vaadin-side-nav-item[data-route='$route']").first().click()
-        page.waitForSelector("#demo ktjs-demo-page h1")
+        page.waitForSelector("#demo wrapper-template-$route-page h1")
     }
 
     /** Opens the layout's language menu and picks [code]. */
