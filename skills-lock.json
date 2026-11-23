@@ -1,7 +1,13 @@
 {
   "version": 2,
   "skills": {
-    "kotlin-multiplatform-libraries-expert": {
+    "coding-preferences": {
+      "source": "shijianjs/dev-agent-skills",
+      "commit": "5f72037ec852c98ebe833de4a25afedb2b88550d",
+      "sourceType": "github",
+      "skillPath": "skills/coding-preferences/SKILL.md",
+      "computedHash": "64d140910fa079c00bd4f6b3213e0e2a2edfe8f9b32d4e673c43b43e0089d940"
+    },    "kotlin-multiplatform-libraries-expert": {
       "source": "JetBrains/klibs-io",
       "sourceType": "github",
       "skillPath": "skills/kmp-libraries-expert/SKILL.md",
