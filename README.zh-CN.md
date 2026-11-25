@@ -68,7 +68,7 @@ Gradle 从这两份文件推导基础版本和 `npm(...)` 依赖：
 ./gradlew kotlinUpgradePackageLock
 ```
 
-`docs` 模块同样是 Kotlin/JS 项目。三个 ktjs-docusaurus 版本都写在 `gradle.properties` 里：wrapper klib、
+`docs` 模块同样是 Kotlin/JS 项目。三个 ktjs-docusaurus 版本都写在 `gradle/libs.versions.toml` 里：wrapper klib、
 Gradle 插件、以及首页分区用到的工具箱——那个项目的每个模块各自带 `-kt.N` 修订号。写 SNAPSHOT 时从
 `mavenLocal` 解析。工具箱的浏览器那一半不是独立的 Maven 产物，而是 kit klib 里的资源，由
 `extractKitBundle` 解到站点的 `static/ktjs-client/`。

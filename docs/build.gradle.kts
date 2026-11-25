@@ -1,6 +1,6 @@
 plugins {
     kotlin("multiplatform")
-    id("io.github.shijianjs.ktjs.docusaurus")
+    alias(libs.plugins.ktjs.docusaurus)
 }
 
 /**
@@ -29,22 +29,18 @@ kotlin {
         jsMain.dependencies {
             // The wrapper brings its own `@docusaurus/*` npm dependencies: the klib records the
             // versions it was built against and Kotlin/JS installs them in the npm workspace.
-            implementation(
-                "io.github.shijianjs:ktjs-docusaurus:${providers.gradleProperty("ktjs-docusaurus.version").get()}",
-            )
+            implementation(libs.ktjs.docusaurus)
 
             // The Node-safe half of the kit: the landing page tags are markup, but `TocToggle`
             // (the desktop table of contents' collapse button) is code the client module calls.
-            implementation(
-                "io.github.shijianjs:ktjs-docusaurus-kit:${providers.gradleProperty("ktjs-docusaurus-kit.version").get()}",
-            )
+            implementation(libs.ktjs.docusaurus.kit)
 
             // The mermaid theme is resolved *by name* from the generated configuration, so npm has
             // to install it next to the site: no Kotlin code imports it, and the wrapper does not
-            // bring it along. Version is the upstream `@docusaurus/*` lockstep anchor (3.10.2),
-            // also pinned in the root `package.json` so Dependabot keeps it in step with the
-            // wrapper's Docusaurus version.
-            implementation(npm("@docusaurus/theme-mermaid", "3.10.2"))
+            // bring it along. Its version is the upstream `@docusaurus/*` lockstep anchor
+            // (`docusaurus` in the catalog), also pinned in the root `package.json` so Dependabot
+            // keeps it in step with the wrapper's Docusaurus version.
+            implementation(npm("@docusaurus/theme-mermaid", libs.versions.docusaurus.get()))
         }
     }
 }
@@ -59,10 +55,9 @@ val kitBundle: Configuration by configurations.creating {
 }
 
 dependencies {
-    kitBundle(
-        "io.github.shijianjs:ktjs-docusaurus-kit-js:" +
-            "${providers.gradleProperty("ktjs-docusaurus-kit.version").get()}@klib",
-    )
+    // Same coordinate as `libs.ktjs.docusaurus.kit`, plus the `@klib` suffix: a variant-aware
+    // resolver would otherwise pick a `.jar` (there is none) or the wrong variant.
+    kitBundle(libs.ktjs.docusaurus.kit.js.get().toString() + "@klib")
 }
 
 val kitBundleDir = layout.buildDirectory.dir("generated/kit-bundle/ktjs-client")

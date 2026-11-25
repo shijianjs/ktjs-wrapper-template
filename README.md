@@ -75,7 +75,7 @@ After adding or upgrading an npm dependency, refresh the shared lock file:
 ```
 
 The `docs` module is a Kotlin/JS project too. All three ktjs-docusaurus versions live in
-`gradle.properties` — the wrapper klib, the Gradle plugin and the kit whose home sections the landing
+`gradle/libs.versions.toml` — the wrapper klib, the Gradle plugin and the kit whose home sections the landing
 page uses — because each of those modules carries its own revision. A SNAPSHOT there is resolved from
 `mavenLocal`, so building the site against an unreleased wrapper means publishing that wrapper
 locally first. The kit's browser bundle is not a Maven artifact: it ships as a resource of the kit's

@@ -28,8 +28,8 @@ wrapper。**本仓库自己就是模板，也是一个能立刻跑的项目**：
   Markdown，由 [ktjs-docusaurus](https://github.com/shijianjs/ktjs-docusaurus) 的 Gradle 插件组装并调用
   Docusaurus CLI。`pagesSite` 把它放在 Pages **根目录**，demo 在 `/demo/`、API 在 `/api/`：`baseUrl`
   （`/ktjs-wrapper-template/`）和导航里那两个跳转都由 `Config.kt` 顶部的常量推出来，改布局要一起改。
-  不发布、也不进 Dokka。版本在 `gradle.properties`：`ktjs-docusaurus.version` 是 wrapper klib 的，
-  `ktjs-docusaurus-gradle-plugin.version` 是插件的，`ktjs-docusaurus-kit.version` 是工具箱的（那个项目每个
+  不发布、也不进 Dokka。版本在 `gradle/libs.versions.toml`：`ktjs-docusaurus` 是 wrapper klib 的，
+  `ktjs-docusaurus-gradle-plugin` 是插件的，`ktjs-docusaurus-kit` 是工具箱的（那个项目每个
   模块各有 `-kt.N` 修订号）；写 SNAPSHOT 时从 `mavenLocal` 解析。首页的 `<ktjs-hero>` / `<ktjs-features>` /
   `<ktjs-next-steps>` 来自工具箱：浏览器那一半不是独立 Maven 产物，而是 kit klib 里的
   `ktjs-client/ktjs-docusaurus-kit-browser.js`，`docs/build.gradle.kts` 用 `extractKitBundle` 从 klib
@@ -660,9 +660,9 @@ klibs.io 从 Maven Central 与 GitHub 自动抓取，无需提交元数据文件
   各区块都是自己的元素（模板现成的：`<ktjs-demo-header>` / `<ktjs-section>` / `<ktjs-button-demo>` /
   `<ktjs-api>` / `<ktjs-conventions>`）。上游自定义元素照常被包在这些 shadow 树里，样式只作用在它的宿主上，
   不往它的 shadow 里伸手。
-- 页面代码用 `ktjs-dom-kit`：版本写在 `gradle.properties` 的 `ktjs-dom-kit.version`（Maven Central 普通依赖），
-  `demo/build.gradle.kts` 的 `jsMain` 引用它；标签走 `TagName<T>`、样式走 `cssSheet` / `attachStyledShadow`。
-- **元素不手写 reference**：`ktjs-dom-kit-ksp` 跑在 `demo` 模块里（`kspJs` 依赖同一份 `ktjs-dom-kit.version`），
+- 页面代码用 `ktjs-dom-kit`：版本写在 `gradle/libs.versions.toml` 的 `ktjs-dom-kit`（Maven Central 普通依赖），
+  `demo/build.gradle.kts` 的 `jsMain` 引用 `libs.ktjs.dom.kit`；标签走 `TagName<T>`、样式走 `cssSheet` / `attachStyledShadow`。
+- **元素不手写 reference**：`ktjs-dom-kit-ksp` 跑在 `demo` 模块里（`kspJs` 依赖同一个 `ktjs-dom-kit` 版本，即 catalog 的 `ktjs-dom-kit-ksp`），
   从类名 + `ksp { arg("ktjs.tagPrefix", "…") }` 生成标签与 `observedAttributes`。companion 只有一行
   `companion object : XDefaultReference()`；标签不能由类名拼出来时才写 `name = "…"`，属性名不一样时用
   `@AttributeName`。属性一律零参 `by attr`，名字、`ALL` 与 `ATTRIBUTES` 都在生成物里。

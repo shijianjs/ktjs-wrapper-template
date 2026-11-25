@@ -57,41 +57,29 @@ kotlin {
             resources.srcDir(copyLumoStyles)
         }
         jsMain.dependencies {
-            implementation("org.jetbrains.kotlin-wrappers:kotlin-browser:2026.11.2")
+            implementation(libs.kotlin.browser)
             // dom-kit is what the pages themselves use for typed nodes and sheets: `HtmlTagName.a { … }`,
             // the `cssSheet` DSL and the class names a page ships with its own rules. Detekt forbids mixing
             // `web.*` with `org.w3c.dom.*` / `kotlinx.browser.*`.
-            implementation(
-                "io.github.shijianjs:ktjs-dom-kit:" +
-                    providers.gradleProperty("ktjs-dom-kit.version").get(),
-            )
+            implementation(libs.ktjs.dom.kit)
             // The shared shell: layout, menu, router, i18n and the page blocks. Published to
             // `mavenLocal` by a working tree of the `ktjs-dom-kit` repository until the release batch.
-            implementation(
-                "io.github.shijianjs:ktjs-demo-kit-js:" +
-                    providers.gradleProperty("ktjs-demo-kit.version").get(),
-            )
-            // The components the pages compose with (card, horizontal / vertical layout) and the icon
+            implementation(libs.ktjs.demo.kit.js)
+            // The components the pages compose with (card, horizontal / vertical layout), and the icon
             // set the drawer marks come from.
-            implementation(
-                "io.github.shijianjs:ktjs-vaadin-web-components-js:" +
-                    providers.gradleProperty("ktjs-vaadin-web-components.version").get(),
-            )
-            implementation(
-                "io.github.shijianjs:ktjs-iconify-icon-js:" +
-                    providers.gradleProperty("ktjs-iconify-icon.version").get(),
-            )
+            implementation(libs.ktjs.vaadin.web.components.js)
+            implementation(libs.ktjs.iconify.icon.js)
             // The published module the demo demonstrates, one line per module.
             implementation(project(":ktjs-wrapper-template-core"))
         }
 
         jvmTest.dependencies {
-            implementation("com.microsoft.playwright:playwright:1.61.0")
-            implementation("cn.hutool:hutool-all:5.8.48")
-            implementation("org.junit.jupiter:junit-jupiter:6.1.3")
-            implementation("org.junit-pioneer:junit-pioneer:2.3.0")
+            implementation(libs.playwright)
+            implementation(libs.hutool.all)
+            implementation(libs.junit.jupiter)
+            implementation(libs.junit.pioneer)
             implementation(kotlin("test-junit5"))
-            runtimeOnly("org.junit.platform:junit-platform-launcher:6.1.3")
+            runtimeOnly(libs.junit.platform.launcher)
         }
     }
 }
@@ -140,7 +128,7 @@ tasks.named<Test>("jvmTest") { enabled = false }
  * listing all of them. The prefix spells the tags this demo already uses: `wrapper-template-`.
  */
 dependencies {
-    add("kspJs", "io.github.shijianjs:ktjs-dom-kit-ksp:${providers.gradleProperty("ktjs-dom-kit.version").get()}")
+    add("kspJs", libs.ktjs.dom.kit.ksp)
 }
 
 ksp {
