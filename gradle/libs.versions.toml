@@ -42,7 +42,7 @@ ktjs-docusaurus-kit = "0.1.0-SNAPSHOT"
 # (`ktjs-vaadin-web-components-js`) and the icon set of the drawer marks (`ktjs-iconify-icon-js`).
 ktjs-dom-kit = "0.1.0-SNAPSHOT"
 ktjs-demo-kit = "0.1.0-SNAPSHOT"
-ktjs-vaadin-web-components = "25.3.5-kt.8-SNAPSHOT"
+ktjs-vaadin-web-components = "25.3.6-kt.8-SNAPSHOT"
 ktjs-iconify-icon = "3.0.5-kt.6-SNAPSHOT"
 
 # npm versions Gradle has to know about (the npm dependency list itself is `package.json`):
