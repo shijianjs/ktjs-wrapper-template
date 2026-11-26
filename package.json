@@ -16,6 +16,6 @@
   },
   "dependencies": {
     "@docusaurus/theme-mermaid": "3.10.2",
-    "@vaadin/button": "25.3.6"
+    "@vaadin/button": "25.3.7"
   }
 }
